@@ -2,7 +2,7 @@
 
 DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮把你的 DSH 数据(会话、设置、插件、技能)同步到自己的 GitHub 私有仓库,多台电脑互相同步;设置面板「同步 · 会话管理」分节可以实时浏览/搜索会话、查看已归档对话、**删除会话(回收站式)**;侧栏会话「…」菜单内置「删除…」。
 
-> 前身是 `dsh-whale-sync`,v0.3 起更名 **dsh-sync**(与鲸鱼娘挂件再无关联)。配置文件 `~/.dsh/dsh-sync.json`、本地 git 仓库与同步历史完全兼容,卸旧装新即可无缝升级。
+> v0.3 起定名 **dsh-sync**。配置文件 `~/.dsh/dsh-sync.json`、本地 git 仓库与同步历史完全兼容,旧版用户卸旧装新即可无缝升级。
 
 ## 安装(一行命令)
 
@@ -12,17 +12,10 @@ DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同�
 dsh plugin --profile web add dsh-sync
 ```
 
-从 dsh-whale-sync 升级(先卸旧再装新;`~/.dsh` 数据与同步历史不受影响):
-
-```powershell
-dsh plugin --profile web remove dsh-whale-sync
-dsh plugin --profile web add dsh-sync
-```
-
 也可以从 Git 仓库直接装(以包内 package.json 的 `name` 为准,目录/仓库名不影响):
 
 ```powershell
-dsh plugin --profile web add github:dpskk2/dsh-whale-sync
+dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 ```
 
 装完**重启 dsh**,侧栏左下出现「⟳ 同步」按钮(原生嵌入侧栏底栏,不再悬浮遮挡页面)。
