@@ -1,7 +1,6 @@
-# dsh-whale-sync bundle patch
-# 安装:dsh plugin --profile web add dsh-whale-sync
-# pnpm 装完依赖后,dsh 会把"声明了 dsh.bundle 的依赖"自动追加进 bundle 层,
-# 因此鲸鱼娘挂件(dsh-whale-widget)由 reconcile 自动装载,这里只挂本插件自己。
+# dsh-sync bundle patch
+# 安装:dsh plugin --profile web add dsh-sync
+# pnpm 装完依赖后,dsh 会把"声明了 dsh.bundle 的依赖"自动追加进 bundle 层,这里挂本插件自己。
 - insert:
-    - id: dsh-whale-sync
-      name: dsh-whale-sync
+    - id: dsh-sync
+      name: dsh-sync

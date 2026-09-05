@@ -1,12 +1,13 @@
 {
-  "name": "dsh-whale-sync",
-  "version": "0.2.0",
-  "description": "DeepSeek Harness 一键同步插件:页面左下角「⟳ 同步」按钮,把会话/设置/API密钥/插件/技能同步到你的 GitHub 私有仓库,支持会话删除",
+  "name": "dsh-sync",
+  "version": "0.3.0",
+  "description": "DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮 + 设置面板「同步 · 会话管理」,把会话/设置/插件/技能同步到你的 GitHub 私有仓库,支持会话删除(回收站)与已归档对话实时浏览",
   "keywords": [
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
-    "sync"
+    "sync",
+    "backup"
   ],
   "type": "module",
   "main": "lib/index.js",
@@ -30,12 +31,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dpskk2/dsh-whale-sync.git"
+    "url": "git+https://github.com/dpskk2/dsh-sync.git"
   },
   "bugs": {
-    "url": "https://github.com/dpskk2/dsh-whale-sync/issues"
+    "url": "https://github.com/dpskk2/dsh-sync/issues"
   },
-  "homepage": "https://github.com/dpskk2/dsh-whale-sync#readme",
+  "homepage": "https://github.com/dpskk2/dsh-sync#readme",
   "engines": {
     "node": ">=20"
   },
