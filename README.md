@@ -35,14 +35,14 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 
 ## 首次配置(2 分钟)
 
-1. 在 GitHub 建一个**私有**仓库(如 `dsh-sync`);
-2. 编辑 `~/.dsh/dsh-sync.json`,填入远端地址:
+- **一键(推荐)**:本机装好 [gh CLI](https://cli.github.com) 并 `gh auth login`,配置里 `remote` 留空(默认 `autoRepo=true`),点一下「⟳ 同步」——插件会自动创建/复用你的**私有**仓库(默认名 `dsh-sync`,可在 `repoName` 改),把 `remote` 写回配置并全量推送。任何一步失败都退化为本地快照,不中断、不弄脏数据。
+- **手动**:在 GitHub 建一个**私有**仓库(如 `dsh-sync`),编辑 `~/.dsh/dsh-sync.json` 填入远端地址:
 
-```json
-{ "remote": "https://github.com/你的用户名/dsh-sync.git" }
-```
+  ```json
+  { "remote": "https://github.com/你的用户名/dsh-sync.git" }
+  ```
 
-3. 点一下「⟳ 同步」——首次会初始化本地 git 仓库并全量推送。完成。
+  点一下「⟳ 同步」——首次会初始化本地 git 仓库并全量推送。完成。
 
 ## 同步什么
 
@@ -80,6 +80,10 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 | `intervalSeconds` | `300` | (auto)周期兜底 |
 | `eventDebounceSeconds` | `15` | (auto)对话结束后的去抖延迟 |
 | `minCommitIntervalSeconds` | `120` | (auto)提交节流;**手动触发(按钮 / 设置面板 / CLI)不受限**,点一下立刻提交 |
+| `autoRepo` | `true` | 首次同步(`remote` 为空)时,自动创建/复用 GitHub 私有仓库;设 `false` 关闭,改回手动填 `remote` |
+| `repoName` | `dsh-sync` | 自动使用的仓库名(仅 `autoRepo` 且未配置 `remote` 时生效) |
+| `repoOwner` | `''` | 仓库所属用户名;留空则取 `gh` 登录账号 |
+| `repoDescription` | `''` | 自动创建仓库时的描述(可选) |
 
 > v0.3 修正:旧版 README 写 `enabled` 默认 `false`、`commitMessage` 默认 `dsh-sync: snapshot`,代码实际是 `true` 与 `dsh-sync: auto snapshot`;且旧版的手动按钮其实被提交节流限制——v0.3 起手动触发一律免节流,言行一致。
 
