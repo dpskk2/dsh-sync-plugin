@@ -1,15 +1,15 @@
-# dsh-sync
+# dsh-sync-plugin
 
 DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮把你的 DSH 数据(会话、设置、插件、技能)同步到自己的 GitHub 私有仓库,多台电脑互相同步;设置面板「同步 · 会话管理」分节可以实时浏览/搜索会话、查看已归档对话、**删除会话(回收站式)**;侧栏会话「…」菜单内置「删除…」。
 
-> v0.3 起定名 **dsh-sync**。配置文件 `~/.dsh/dsh-sync.json`、本地 git 仓库与同步历史完全兼容,旧版用户卸旧装新即可无缝升级。
+> v0.3 起定名 **dsh-sync-plugin**。配置文件 `~/.dsh/dsh-sync.json`、本地 git 仓库与同步历史完全兼容,旧版用户卸旧装新即可无缝升级。
 
 ## 安装(一行命令)
 
 全新安装:
 
 ```powershell
-dsh plugin --profile web add dsh-sync
+dsh plugin --profile web add dsh-sync-plugin
 ```
 
 也可以从 Git 仓库直接装(以包内 package.json 的 `name` 为准,目录/仓库名不影响):
@@ -25,12 +25,13 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 ## 界面在哪
 
 - **侧栏底部「⟳ 同步」**:一键全量同步(提交 + 推送 + 拉取),结果以短暂气泡提示;侧栏收起时自动变成纯图标。
-- **设置 → 同步 · 会话管理**:
-  - 同步状态卡:远端地址、分支、模式、上次同步结果,以及「立即同步」按钮;
+- **同步实时进度(v0.3.1)**:同步进行中,按钮文字实时变为当前阶段(取远端 / 提交 / 比对 / 拉取 / 合并 / 推送…),按钮上方有常驻进度气泡(阶段 + 已耗时),设置面板同步卡下方也有一行进度;阶段由引擎在每次 git 调用前上报,`/dsh-sync/api/progress` 每 0.5s 轮询一次。
+- **设置 → 同步 · 会话管理**(视觉与原生设置一致,无框无底色):
+  - 同步组:远端地址、分支、模式、上次同步结果,右侧「立即同步」胶囊按钮(点击后原地变为实时进度行);
   - **已归档对话**:标题、所属工作区、最后活动/创建时间、大小,默认按最后活动排序,可切换(创建时间 / 标题),支持搜索;**列表每 3 秒自动刷新**——侧栏刚归档的对话几秒内就会出现在这里;
   - **全部会话**:默认折叠,展开后同样可搜索、排序、删除;
-  - 每行「删除」:移入本地回收站 `~/.dsh/.trash`(可找回),同步后其他电脑同步删除;删除后自动刷新页面。
-- **侧栏会话「…」菜单**:在原生「归档会话」下方注入红色「删除…」,确认后删除并自动刷新页面。
+  - 每行「删除」:**先调原生归档接口**(与原生「归档会话」同一入口,宿主内存登记表同步更新,**侧栏立即消失**,若删的是当前打开的会话会自动收起视图),**再把文件移入本地回收站** `~/.dsh/.trash`(可找回);同步后其他电脑同步删除。
+- **侧栏会话「…」菜单**:在原生「归档会话」下方注入红色「删除…」,确认后先归档后删文件,侧栏立即更新,不再整页刷新。
 
 ## 首次配置(2 分钟)
 
@@ -75,7 +76,7 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 | `enabled` | `true` | 仅在 `mode=auto` 时作为总开关(手动按钮不受它限制) |
 | `remote` | `''` | GitHub 私有仓库地址;留空则只做本地快照(免费版本历史) |
 | `branch` | `main` | 同步分支 |
-| `commitMessage` | `dsh-sync: auto snapshot` | 快照提交信息 |
+| `commitMessage` | `dsh-sync-plugin: auto snapshot` | 快照提交信息 |
 | `intervalSeconds` | `300` | (auto)周期兜底 |
 | `eventDebounceSeconds` | `15` | (auto)对话结束后的去抖延迟 |
 | `minCommitIntervalSeconds` | `120` | (auto)提交节流;**手动触发(按钮 / 设置面板 / CLI)不受限**,点一下立刻提交 |
@@ -85,15 +86,14 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 ## 命令行(不打开 dsh 也能同步)
 
 ```powershell
-node "%USERPROFILE%\.dsh\profiles\web\node_modules\dsh-sync\lib\cli.mjs"
+node "%USERPROFILE%\.dsh\profiles\web\node_modules\dsh-sync-plugin\lib\cli.mjs"
 ```
 
 (可选:把桌面快捷方式指向它。)
 
 ## 已知边界(如实说明)
 
-- **没有「恢复归档」**:DSH 宿主只有归档、没有取消归档的 API;直接改文件会被宿主内存态覆盖,故不做。
-- 删除后,侧栏里该会话的消失依赖一次**页面刷新**(插件已自动刷新)或重启 dsh——宿主把会话登记表放在内存里,改文件不会触发它主动重读。
+- **删除的实现方式**:「删除」按钮 = 原生归档(`uiWorkspace.archiveSession`,宿主内存登记表同步更新,**侧栏立即消失**,与原生「归档会话」完全等效)+ 文件移入本地回收站 `~/.dsh/.trash`(可找回)+ workspace.json 清理。若删除的会话对宿主不可归档(如刚从其他电脑同步来的孤儿数据),归档一步会跳过,侧栏条目要重启 dsh 才消失。
 - 会话附件(`attachments/`)是按内容寻址的共享存储,删除会话不回收附件体积。
 
 ## License

@@ -1,7 +1,7 @@
 {
-  "name": "dsh-sync",
-  "version": "0.3.0",
-  "description": "DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮 + 设置面板「同步 · 会话管理」,把会话/设置/插件/技能同步到你的 GitHub 私有仓库,支持会话删除(回收站)与已归档对话实时浏览",
+  "name": "dsh-sync-plugin",
+  "version": "0.3.2",
+  "description": "DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮(实时进度:取远端/提交/推送/耗时) + 设置面板「同步 · 会话管理」(与原生设置同风格),把会话/设置/插件/技能同步到你的 GitHub 私有仓库,支持会话删除(原生归档+回收站)与已归档对话实时浏览",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -31,12 +31,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dpskk2/dsh-sync.git"
+    "url": "git+https://github.com/dpskk2/dsh-sync-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/dpskk2/dsh-sync/issues"
+    "url": "https://github.com/dpskk2/dsh-sync-plugin/issues"
   },
-  "homepage": "https://github.com/dpskk2/dsh-sync#readme",
+  "homepage": "https://github.com/dpskk2/dsh-sync-plugin#readme",
   "engines": {
     "node": ">=20"
   },
