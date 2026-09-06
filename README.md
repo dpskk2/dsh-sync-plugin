@@ -1,6 +1,6 @@
 # dsh-sync-plugin
 
-DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮把你的 DSH 数据(会话、设置、插件、技能)同步到自己的 GitHub 私有仓库,多台电脑互相同步;设置面板「同步 · 会话管理」分节可以实时浏览/搜索会话、查看已归档对话、**删除会话(回收站式)**;侧栏会话「…」菜单内置「删除…」。
+DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮把你的 DSH 数据(会话、设置、插件、技能、**工作区文件夹内容**)同步到自己的 GitHub 私有仓库,多台电脑互相同步;设置面板「同步 · 会话管理」分节可以实时浏览/搜索会话、查看已归档对话、**删除会话(回收站式)**;侧栏会话「…」菜单内置「删除…」。
 
 > v0.3 起定名 **dsh-sync-plugin**。配置文件 `~/.dsh/dsh-sync.json`、本地 git 仓库与同步历史完全兼容,旧版用户卸旧装新即可无缝升级。
 
@@ -50,7 +50,7 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 | --- | --- |
 | 全部会话记录与附件 | **`.credentials.yaml`(API 密钥)——密钥永不上传**,换电脑重新登录即可 |
 | `settings.yaml`、profile 插件配置与依赖清单(`package.json`,新电脑 `pnpm install` 装回插件)、技能、工作区状态 | `**/node_modules/`(依赖,`pnpm install` 复原) |
-| | 会话投影缓存(可再生)、引擎自身临时状态(`.dsh-sync.state.json`) |
+| **工作区文件夹内容**(每个工作区对应一个真实文件夹,如 `C:\Users\你\Documents\聊天`;以影子 git 仓库的形式同步到远端 `ws/<工作区Id>` 分支)**;目标机缺该文件夹时自动创建** | 会话投影缓存(可再生)、引擎自身临时状态(`.dsh-sync.state.json`) |
 
 > v0.3 修正:旧版 README 写「同步 API 密钥」,与代码不符——引擎生成的 `~/.dsh/.gitignore` 一直排除 `.credentials.yaml`,**密钥从不上传**。以代码为准;因此仓库不再含密钥(私有仓库仍然推荐,但不再是安全底线)。默认排除列表在 `~/.dsh/.gitignore`(首次同步时生成,手工改动会被保留;`extraIgnore` 配置仅在首次生成时写入)。
 
@@ -63,10 +63,21 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
   cd "$env:USERPROFILE\.dsh\profiles\web"; pnpm install
   ```
 
-  启动 dsh——插件、配置、会话全部就位,按钮直接可用(密钥需重新登录一次)。
+  启动 dsh——插件、配置、会话全部就位,按钮直接可用(密钥需重新登录一次)。首次点「⟳ 同步」会把各**工作区文件夹内容**(远端 `ws/<id>` 分支)一并拉下来,并在本机自动创建缺失的工作区文件夹。
 
 - **日常**:哪台电脑用完点一下「⟳ 同步」,另一台开工前点一下,数据就接上了。
 - **两台都改过**:不同文件自动合并(两边都保留);同一文件冲突时保留当前电脑版本,对方版本自动备份到远端 `backup/<时间戳>` 分支;无共同历史的新仓库并入远端时,同名文件以远端为准。
+
+## 工作区文件夹同步
+
+DSH 的「工作区」对应一个真实磁盘文件夹(会话投影的 `cwd` 及 `workspace.json` 里的 `path` 都是它)。v0.4 起插件把它也一起同步:
+
+- **影子 git 仓库,不碰你的真实文件夹**:每个工作区的 git 元数据放在 `~/.dsh/workspace-repos/<工作区Id>.git`,通过 `core.worktree` 指向真实文件夹。**真实文件夹里不会出现 `.git`**,所有 git 操作都在 `.dsh` 管控区里完成。
+- **内容自动对齐**:同步时以真实文件夹为工作树提交变更,与远端 `ws/<工作区Id>` 分支快进/推送/合并;不同电脑交替使用即可接上。
+- **目标机缺文件夹 → 自动创建**:在远端把工作区内容拉下来时,若本机没有对应文件夹,插件会先自动创建它,再物化内容(换用户名也能对上,见下)。
+- **跨机路径**:若记录的是 `C:\Users\<某用户>\Documents\聊天`,插件会尝试把它重映射到**本机主目录**下对应的 `Documents\聊天`(换电脑/用户名也能对上)。也可用 `workspaceBase` 把所有工作区统一放到某个目录下(按文件夹名)。
+
+> 排除项(默认 `node_modules`,`.git` 恒排除)写入影子仓库的 `info/exclude`,不会出现在你的真实文件夹里;可用 `workspaceExtraIgnore` 增补。
 
 ## 配置(`~/.dsh/dsh-sync.json`)
 
@@ -84,6 +95,10 @@ dsh plugin --profile web add github:dpskk2/dsh-sync-plugin
 | `repoName` | `dsh-sync` | 自动使用的仓库名(仅 `autoRepo` 且未配置 `remote` 时生效) |
 | `repoOwner` | `''` | 仓库所属用户名;留空则取 `gh` 登录账号 |
 | `repoDescription` | `''` | 自动创建仓库时的描述(可选) |
+| `workspaceSync` | `true` | 是否同步工作区文件夹内容(完整备份/恢复;目标机缺文件夹自动创建) |
+| `workspaceBranchPrefix` | `ws` | 工作区分支前缀 → `ws/<工作区Id>` |
+| `workspaceBase` | `''` | 可选:所有工作区统一映射到该目录下(按文件夹名),用于跨机路径不一致 |
+| `workspaceExtraIgnore` | `['node_modules']` | 工作区内容额外排除(目录名;`.git` 恒排除);写入影子仓库 `info/exclude`,不碰真实文件夹 |
 
 > v0.3 修正:旧版 README 写 `enabled` 默认 `false`、`commitMessage` 默认 `dsh-sync: snapshot`,代码实际是 `true` 与 `dsh-sync: auto snapshot`;且旧版的手动按钮其实被提交节流限制——v0.3 起手动触发一律免节流,言行一致。
 
@@ -99,6 +114,7 @@ node "%USERPROFILE%\.dsh\profiles\web\node_modules\dsh-sync-plugin\lib\cli.mjs"
 
 - **删除的实现方式**:「删除」按钮 = 原生归档(`uiWorkspace.archiveSession`,宿主内存登记表同步更新,**侧栏立即消失**,与原生「归档会话」完全等效)+ 文件移入本地回收站 `~/.dsh/.trash`(可找回)+ workspace.json 清理。若删除的会话对宿主不可归档(如刚从其他电脑同步来的孤儿数据),归档一步会跳过,侧栏条目要重启 dsh 才消失。
 - 会话附件(`attachments/`)是按内容寻址的共享存储,删除会话不回收附件体积。
+- **工作区文件夹同步的边界**:位于用户主目录之外的工作区(如 `D:\…`),跨机恢复时按记录的绝对路径创建(无法自动换盘符);某工作区文件夹本身**是个 git 仓库**(自带 `.git`)时,其内容照常同步,但该嵌套仓库的 `.git` 不会被当作子模块同步。工作区内容较大时首次提交/推送耗时较长(增量后变快)。
 
 ## License
 
