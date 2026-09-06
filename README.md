@@ -4,12 +4,18 @@ DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同�
 
 > v0.3 起定名 **dsh-sync-plugin**。配置文件 `~/.dsh/dsh-sync.json`、本地 git 仓库与同步历史完全兼容,旧版用户卸旧装新即可无缝升级。
 
-## 安装(一行命令)
+## 安装/升级
 
 全新安装:
 
 ```powershell
 dsh plugin --profile web add dsh-sync-plugin
+```
+
+升级:
+
+```powershell
+dsh plugin --profile web update dsh-sync-plugin
 ```
 
 也可以从 Git 仓库直接装(以包内 package.json 的 `name` 为准,目录/仓库名不影响):
