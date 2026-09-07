@@ -1,7 +1,7 @@
 {
   "name": "dsh-sync-plugin",
-  "version": "0.4.1",
-  "description": "DeepSeek Harness 一键同步 + 会话管理插件:侧栏底部原生「⟳ 同步」按钮(实时进度) + 设置面板「同步 · 会话管理」,把会话/设置/插件/技能/工作区文件夹内容同步到你的 GitHub 私有仓库(目标机缺工作区文件夹自动创建),支持会话删除(原生归档+回收站)与已归档对话实时浏览",
+  "version": "0.5.0",
+  "description": "DeepSeek Harness 会话同步插件:通过 GitHub 私有仓库在多台电脑间双向同步 DSH 会话,并同步每个会话所属工作区的对应关系(workspace.json)与各工作区真实文件夹内容;侧栏原生「⟳ 同步」按钮 + 设置「同步」状态卡。仅保留同步功能,已去掉会话浏览/删除等管理功能。",
   "keywords": [
     "dsh",
     "dsh-plugin",
