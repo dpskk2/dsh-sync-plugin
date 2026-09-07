@@ -1,7 +1,7 @@
 {
   "name": "dsh-sync-plugin",
-  "version": "0.7.0",
-  "description": "DeepSeek Harness 会话同步插件:通过 GitHub 私有仓库在多台电脑间双向同步 DSH 会话,并同步每个会话所属工作区的对应关系(workspace.json)与各工作区真实文件夹内容;冲突时「双边保留」并把冲突呈现给用户抉择(仿 OneNote)。设置里新增「归档会话」管理处:列出全部会话(含已归档/幽灵),可取消归档/彻底删除,让真实文件与侧边栏对应。",
+  "version": "0.8.0",
+  "description": "DeepSeek Harness 会话同步插件:通过 GitHub 私有仓库在多台电脑间双向同步 DSH 会话,并同步每个会话所属工作区的对应关系(workspace.json)与各工作区真实文件夹内容;冲突时「双边保留」并把冲突呈现给用户抉择(仿 OneNote)。设置里新增「归档会话」管理处:列出全部会话(含已归档/幽灵),可取消归档/彻底删除,让真实文件与侧边栏对应。另托管跨机分发的 node_modules 补丁(patches/,内置 web_fetch 直连失败回退系统代理修复)。",
   "keywords": [
     "dsh",
     "dsh-plugin",
