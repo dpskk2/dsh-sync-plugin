@@ -4,10 +4,16 @@ DeepSeek Harness **会话同步插件**:通过自己的 GitHub 私有仓库,在*
 
 > **v0.5 起只做「同步」**。去掉了此前的会话浏览/归档/删除等管理功能(那些交给 DSH 原生 UI 即可),专注于把「会话 + 工作区对应关系 + 工作区文件」稳定地在多台电脑间对齐。配置文件、本地 git 仓库与同步历史完全兼容旧版,直接升级即可。
 
-## 安装(一行命令)
+## 安装/升级
 
 ```powershell
 dsh plugin --profile web add dsh-sync-plugin
+```
+
+升级:
+
+```powershell
+dsh plugin --profile web update dsh-sync-plugin
 ```
 
 也可以从 Git 仓库直接装(以包内 package.json 的 `name` 为准,目录/仓库名不影响):
