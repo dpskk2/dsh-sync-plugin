@@ -31,10 +31,19 @@ jobs:
             exit 1
           fi
 
+      - name: Skip if version already on npm (idempotent)
+        run: |
+          PKG="$(node -p 'require("./package.json").version')"
+          if npm view "dsh-sync-plugin@${PKG}" version >/dev/null 2>&1; then
+            echo "dsh-sync-plugin@${PKG} 已存在于 npm,跳过发布"
+            echo "ALREADY_PUBLISHED=true" >> "$GITHUB_ENV"
+          fi
+
       - name: Install dependencies
         run: npm install
 
       - name: Publish to npm
+        if: env.ALREADY_PUBLISHED != 'true'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
