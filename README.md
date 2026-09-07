@@ -125,6 +125,23 @@ node "%USERPROFILE%\.dsh\profiles\web\node_modules\dsh-sync-plugin\lib\cli.mjs"
 
 (可选:把桌面快捷方式指向它。结果打印到控制台并**保留**,便于排障。)
 
+## 补丁管理(node_modules 补丁跨机分发)
+
+DSH 内置包(如 `@deepseek-ai/dsh-web-fetch-http`)的修复不能直接改在 `node_modules`
+里——依赖目录不随同步仓库走(`.gitignore` 排除),DSH 升级还会整体覆盖。
+v0.8 起插件把这类补丁做成**随主仓库同步的托管补丁**,每台机器启动/同步后自动重新套用:
+
+- 补丁放 `~/.dsh/patches/<名字>/`(天然入库、跨机同步):`patch.json` 清单 +
+  完整目标文件作为 `payload`;
+- 清单字段:`name` / `package`(目标 npm 包)/ `target`(包内相对路径,如 `lib/index.js`)/
+  `payload`(补丁文件名)/ `packageVersion`(录制时的包版本,不符则不盲写,标 `needs-refresh`)/
+  `marker`(补丁标记,检测旧版补丁并升级)/ `enabled`;
+- 应用时机:启动时、每次同步后、CLI 手动同步后、`sync_patches` 工具 / 设置状态卡手动触发;
+- 状态:已是最新 / 已应用 / 已更新(套用后**重启 dsh 生效**)/ 已还原 / 上游已升级待重录;
+- 还原:首次套用前会把原始文件备份成 `original-*` 放在补丁目录里,删除 `payload` 前可用它还原。
+
+内置补丁:`web-fetch-http`(web_fetch 直连失败自动回退系统代理 + 瞬态错误重试 + 报错显示真实根因)。
+
 ## 已知边界(如实说明)
 
 - **两机同时改同一会话**会「双边保留」:本机版本保留,远端版本另存为 `.dsh-conflict-<时间戳>` 拷贝,并把远端头备份到 `backup/<时间戳>` 分支——同一会话两端的内容不会自动合并(会话日志是二进制 `.jsonl.zstd`,git 无法逐行合并)。在「冲突」分节或 `sync_conflict_resolve` 里裁决;要避免就错开使用、用完即同步。
