@@ -1,0 +1,19 @@
+# awesome-dsh-plugin 收录投稿文件
+#
+# 用法:把这个文件内容复制到 awesome-dsh-plugin 仓库的
+#   data/plugins/dpskk2__dsh-sync-plugin.yml
+# 然后发一个 PR(一个 PR 只加这一个文件)。
+# 官方指南:https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/blob/main/contributing.md
+#
+# 收录前提(本插件均已满足):
+#  - package.json 声明了 dsh.bundle manifest(cordis.patch.yml)→ 可用 dsh plugin add 安装 ✓
+#  - 仓库有真实可用的代码、创建满 1 天、持续维护 ✓
+#  - 记得在 GitHub 仓库设置里添加 topic: dsh-plugin(还有 dsh、deepseek-harness)
+#  - 建议:发布到 npm(仓库 package.json 的 repository 已指回本仓库,自动关联)
+
+url: https://github.com/dpskk2/dsh-sync-plugin
+name: dpskk2/dsh-sync-plugin
+category: session
+description:
+  en: Two-way sync of DSH sessions, workspace mappings, settings and API keys between machines through your own private GitHub repo.
+  zh: 通过你自己的 GitHub 私有仓库,在多台电脑间双向同步 DSH 会话、工作区对应关系、设置与 API 密钥。
