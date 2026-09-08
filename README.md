@@ -1,7 +1,8 @@
 # dsh-sync-plugin
 
 > 用你自己的 **GitHub 私有仓库**,在多台电脑之间**双向同步整个 DeepSeek Harness(DSH)**:
-> 会话、附件、工作区、设置(字号 / 模型 / 默认模型 / 第三方 API 配置)、**API 密钥**。
+> 会话、附件、工作区、设置(字号 / 模型 / 默认模型 / 第三方 API 配置)。
+> **API 密钥(`.credentials.yaml`)不上云**——换电脑重新登录,或走环境变量 `apiKeyEnv`。
 > 在这台电脑按一下「⟳ 同步」,另一台电脑打开就是一模一样。
 
 **安装(一行命令):**
@@ -10,12 +11,12 @@
 dsh plugin --profile web add dsh-sync-plugin
 ```
 
-_English: Two-way sync of DSH sessions, workspace files, settings and API keys between machines via your own private GitHub repo. Installable with `dsh plugin add`._
+_English: Two-way sync of DSH sessions, workspace files, settings and patches between machines via your own private GitHub repo. API keys stay machine-local (re-login or `apiKeyEnv` on each machine). Installable with `dsh plugin add`._
 
 ## 为什么需要它
 
 - 💬 **会话不丢**——换电脑 / 换系统,对话记录、附件全部带过去;
-- ⚙️ **设置不丢**——字号、模型列表、默认模型、第三方 API 配置、**API 密钥**一起同步(仓库是你私有的,钥匙只在你手里);
+- ⚙️ **设置不丢**——字号、模型列表、默认模型、第三方 API 配置随仓库同步(冲突时**自动保留本机**);**API 密钥不上云**,换电脑重新登录或走环境变量 `apiKeyEnv`;
 - 📁 **工作区一起走**——每个工作区的真实文件夹内容也同步,目标机缺文件夹自动创建;
 - 🛡️ **绝不丢数据**——两台电脑同时改了同一文件时「双边保留」:两边版本都留着,由你决定留哪个;
 - 🗂️ **归档会话管理**——设置里可列出全部会话(含已归档 / 幽灵),展开预览、取消归档或彻底删除。
@@ -56,17 +57,16 @@ dsh plugin --profile web remove dsh-sync-plugin
 
 ## 同步什么
 
-| ✅ 会同步 | ❌ 不会同步(每台机器各自的状态) |
+| ✅ 会同步 | ❌ 不会同步(机器本地状态 / 密钥 / 依赖) |
 | --- | --- |
 | 会话记录与附件(`sessions/`、`attachments/`) | 窗口大小、用量统计、匿名 ID(`.dshw-*.json`、`.anonymous-user-id`) |
-| 工作区↔会话对应关系(`storages/workspace.json` + 投影缓存) | 依赖目录(`**/node_modules/`,新电脑 `pnpm install` 恢复) |
-| 设置(`settings.yaml`:**字号 / 模型 / 默认模型 / 第三方 API 配置**) | 工作区影子仓库(`workspace-repos/`,引擎内部结构) |
-| **API 密钥(`.credentials.yaml`)**——私有仓库,默认一起同步 | 回收站(`.trash/`)、引擎状态(`.dsh-sync.state.json`) |
-| 各工作区真实文件夹内容(影子 git 仓库,同步到远端 `ws/<工作区Id>` 分支) | |
-| 已装插件与版本(`profiles/web/` 配置与锁文件,不含 node_modules) | |
+| 工作区↔会话对应关系(`storages/workspace.json` + 投影缓存) | 依赖目录(`**/node_modules/`、**`.pnpm-store/`**,新电脑 `pnpm install` 恢复) |
+| 设置(`settings.yaml`:**字号 / 模型 / 默认模型 / 第三方 API 配置**)——冲突时**自动取本机**,不会被远端覆盖 | **API 密钥(`.credentials.yaml`)——密钥不上云**,换电脑重新登录或走 `apiKeyEnv` 环境变量 |
+| 各工作区真实文件夹内容(影子 git 仓库,同步到远端 `ws/<工作区Id>` 分支) | 工作区影子仓库(`workspace-repos/`,引擎内部结构) |
+| 已装插件与版本(`profiles/web/` 配置与锁文件,不含 node_modules) | 回收站(`.trash/`)、引擎状态(`.dsh-sync.state.json`) |
 | node_modules 补丁(`patches/`,如 web_fetch 代理回退修复) | |
 
-> 🔒 **隐私说明**:这是**个人私有仓库**同步工具——设置与 API 密钥默认随仓库同步(仓库私有,钥匙只在你手里)。若某个文件你不想同步,在 `~/.dsh/.gitignore` 里加一行即可(手工改动会被保留)。
+> 🔒 **隐私说明**:这是**个人私有仓库**同步工具——设置随仓库同步(冲突自动取本机);**API 密钥不上云**(跨机走环境变量 `apiKeyEnv` 或重新登录)。若某个文件你不想同步,在 `~/.dsh/.gitignore` 里加一行即可(手工改动会被保留)。
 
 ## 多台电脑怎么用
 
@@ -76,11 +76,13 @@ dsh plugin --profile web remove dsh-sync-plugin
 
 ## 冲突怎么办(不用怕)
 
-两台电脑**同时改了同一个文件**时,插件不会偏向任何一方:
+两台电脑**同时改了同一个文件**时,插件按类型自动处理,任一方数据都不丢:
 
-- 本机版本保留为活动文件,远端版本另存为 `<文件名>.dsh-conflict-<时间戳>` 拷贝——**两边都不丢**;
-- 在 **设置 → 同步 → 冲突** 里可预览两侧内容并裁决:**保留本机 / 采用远端 / 两侧都留**;
-- 会话日志会自动按内容合并(两边新增的对话合进同一个会话),只有少数无法安全合并的情况才需要手动裁决;
+- **会话日志**:按时间自动交错合并(两边新增的对话合进同一个会话),无法安全合并时才「双边保留」;
+- **`workspace.json`(工作区登记表)**:自动**并集合并**(双方工作区与会话映射都保留);并集失败时自动取本机,不占用你的裁决;
+- **`settings.yaml` / `.credentials.yaml`(设置 / 密钥)**:冲突自动**取本机**——绝不让远端覆盖你的设置或密钥;
+- **其余文件**(如 `profiles/web/*` 安装清单):「双边保留」——本机版本保留为活动文件,远端版本另存为 `<文件名>.dsh-conflict-<时间戳>` 拷贝,**两边都不丢**;
+- 需要你裁决的冲突出现在 **设置 → 同步 → 冲突**,点「预览两侧」显示**文本 diff**(`--- 本机 / +++ 远端拷贝`),可裁决:**保留本机 / 采用远端 / 两侧都留**;
 - 日常想完全避免冲突:错开使用、用完即同步。
 
 ## 常用配置(`~/.dsh/dsh-sync.json`)

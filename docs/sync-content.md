@@ -30,7 +30,7 @@
 | `workspace-repos/` | 各工作区的影子 git 仓库(元数据) | 本插件 |
 | `.trash/`、`sessions.rar` 等 | 用户手工清理的遗留物 | 用户 |
 
-## 2. 现在同步什么(v0.10 起)
+## 2. 现在同步什么(v0.11 起)
 
 插件的规则很简单:**`~/.dsh` 下除 `.gitignore` 明确排除的条目外,全部同步**。
 
@@ -41,8 +41,7 @@
 - `profiles/web/` 的**配置与锁文件**(不含 `node_modules`);
 - `patches/`(托管补丁,跨机分发);
 - `dsh-sync.json`(同步配置本身);
-- **`settings.yaml`(v0.10 起)**——字号、模型、默认模型、第三方 provider 配置;
-- **`.credentials.yaml`(v0.10 起)**——API 密钥;
+- **`settings.yaml`(v0.10 起)**——字号、模型、默认模型、第三方 provider 配置;冲突时**自动取本机**(远端版本保留在 git 历史),不会被拉取覆盖;
 - 各工作区**真实文件夹内容**(经 `workspace-repos/` 影子仓库同步到远端 `ws/<工作区Id>` 分支)。
 
 ### ❌ 不同步(默认排除)
@@ -50,22 +49,25 @@
 | 条目 | 为什么 |
 | --- | --- |
 | `**/node_modules/` | 依赖,新电脑 `pnpm install` 恢复 |
+| **`.pnpm-store/`** | pnpm 依赖缓存(与 `profiles/web/` 锁文件重复),新电脑重新 install 生成 |
 | `workspace-repos/` | 影子仓库元数据,引擎内部结构 |
 | `.dshw-size.json` / `.dshw-usage.json` | 每台机器各自的窗口大小 / 用量统计,同步无意义 |
 | `.anonymous-user-id` | 每台机器各自的匿名 ID |
 | `.dsh-sync.state.json` | 引擎自身状态 |
+| **`.credentials.yaml`** | **API 密钥不上云**(v0.10 曾放开同步,v0.11 重新排除)——跨机密钥走环境变量 `apiKeyEnv` 或在新机器重新登录 |
 | `.trash/`、`sessions.rar` 等 | 用户清理的遗留物 |
 
-> 想额外排除某个文件(比如真的不想同步密钥):在 `~/.dsh/.gitignore` 加一行即可,手工改动会被保留。
+> 想额外排除某个文件:在 `~/.dsh/.gitignore` 加一行即可,手工改动会被保留。
 
-### 历史(≤0.9.x)与 v0.10 的差异
+### 历史(≤0.9.x / v0.10 / v0.11)的差异
 
-| 条目 | ≤0.9.x | v0.10 |
-| --- | --- | --- |
-| `settings.yaml` | ❌ 忽略(v0.9.1 起;更早是同步的) | ✅ 同步 |
-| `.credentials.yaml` | ❌ 忽略(一直如此) | ✅ 同步 |
+| 条目 | ≤0.9.x | v0.10 | v0.11 |
+| --- | --- | --- | --- |
+| `settings.yaml` | ❌ 忽略(v0.9.1 起;更早是同步的) | ✅ 同步 | ✅ 同步(冲突自动取本机) |
+| `.credentials.yaml` | ❌ 忽略(一直如此) | ✅ 同步 | ❌ 重新排除(密钥不上云) |
+| `.pnpm-store/` | — | ✅ 同步(v0.10 无排除) | ❌ 排除(依赖缓存) |
 
-**为什么改**:这是**个人私有仓库**同步工具——远端仓库由你自己创建、只有你自己能访问。把设置和密钥排除掉,换电脑就得重设字号、重配 provider、重登密钥,还出现过「拉取把本机配置覆盖掉」的体验问题。既然仓库私有,密钥跟着走反而最省事。升级后插件会自动清理旧 `.gitignore` 里这两条(迁移逻辑在 `lib/sync.js` 的 `ensureRepo`),下次点「⟳ 同步」就把设置与密钥带上。
+**为什么改(v0.11 定案)**:v0.10 把设置与密钥都放进同步范围,理由是"个人私有仓库,钥匙只在你手里"。实际使用中发现两个问题:**(a)** 两机同时改 `settings.yaml` / `.credentials.yaml` 时走「双边保留」要人工裁决,出现过"拉取覆盖本机设置"的体验问题;**（b)** 密钥跟着仓库走,仓库一旦误配 remote 或泄露,风险最高。v0.11 收敛为:设置**继续同步但冲突自动取本机**(设置随换机带过去,又不会被覆盖);密钥**重新排除不上云**(跨机走环境变量 `apiKeyEnv` 或重新登录,DSH 凭据优先级本来就是「环境变量 > `.credentials.yaml`」);依赖缓存排除。升级自动迁移:补回 `.gitignore` 排除条目(`BUILTIN_IGNORE_ENSURE`),并把已在跟踪的机器本地文件**移出索引**(`git rm --cached`,不删文件),下次同步即生效。
 
 ## 3. 还可以同步什么(DSH 演进)
 
@@ -99,16 +101,16 @@
 
 | 现象 | 成因 |
 | --- | --- |
-| **按了同步后字号恢复默认** | `settings.yaml`(含 `ui-theme.fontSize`)在 v0.9.1 起被排除同步;目标机 DSH 启动时按默认值重建 `settings.yaml`,字号归零。v0.10 起同步 `settings.yaml`,不再出现。 |
+| **按了同步后字号恢复默认** | `settings.yaml`(含 `ui-theme.fontSize`)在 v0.9.1 起被排除同步;目标机 DSH 启动时按默认值重建 `settings.yaml`,字号归零。v0.10 起同步 `settings.yaml`,不再出现;v0.11 起连冲突裁决都不用——设置冲突自动取本机。 |
 | **skill 被删 / 技能消失** | 技能不在 `~/.dsh`(旧版本曾在 `.dsh/skills/`,现已被 DSH 移到工作区文件夹与 `~/.agents`)。工作区内的技能随工作区影子仓库同步——历史上的删除多来自旧目录(如 `.dsh/skills弃用`)的人工清理,或工作区影子仓库早期的 `reset` 边界;v0.9.2 起工作区同步只在工作树干净时才 reset,不再有静默覆盖。 |
-| **官方 API / 第三方 API / 模型选择被删** | 这些配置都在 `settings.yaml`(被排除)→ 目标机只剩 `llm-deepseek/files-v3.json`(官方模型目录,一直同步),但 provider 配置与默认模型选择(也在 `settings.yaml`)丢失。v0.10 起同步 `settings.yaml`,一并解决。 |
-| **第三方 key 被删、模型设置还在** | `.credentials.yaml`(密钥)从未同步 → 目标机密钥丢失;而 `settings.yaml` 在 v0.9.1 **之前**是同步的,所以较早同步的目标机「模型设置还在」但密钥不在。这是「配置同步、密钥不同步」两个版本叠加出来的中间态。v0.10 起两者都同步。 |
+| **官方 API / 第三方 API / 模型选择被删** | 这些配置都在 `settings.yaml`(被排除)→ 目标机只剩 `llm-deepseek/files-v3.json`(官方模型目录,一直同步),但 provider 配置与默认模型选择(也在 `settings.yaml`)丢失。v0.10 起同步 `settings.yaml`,一并解决;v0.11 起冲突自动取本机。 |
+| **第三方 key 被删、模型设置还在** | `.credentials.yaml`(密钥)在 v0.10 之前从未同步 → 目标机密钥丢失;而 `settings.yaml` 在 v0.9.1 **之前**是同步的,所以较早同步的目标机「模型设置还在」但密钥不在。这是「配置同步、密钥不同步」两个版本叠加出来的中间态。v0.11 定案:设置继续同步(冲突取本机),密钥**不上云**——跨机请用环境变量 `apiKeyEnv`(凭据优先级高于 `.credentials.yaml`),或在每台机器上重新登录。 |
 
-**v0.10 之后的目标机行为**:新机器克隆仓库后,`settings.yaml` 与 `.credentials.yaml` 直接就位,字号 / 模型 / provider / 密钥全部还原,不再需要重新配置。
+**v0.11 之后的目标机行为**:新机器克隆仓库后,设置 / 会话 / 工作区 / 补丁全部还原;API 密钥需在新机器重新登录一次(或配置好环境变量 `apiKeyEnv` 后无需再配)。
 
 ## 6. 相关文件
 
-- 默认排除列表定义:`lib/sync.js` → `BUILTIN_IGNORE`(新安装)/ `LEGACY_IGNORE_REMOVALS`(旧安装迁移);
+- 默认排除列表定义:`lib/sync.js` → `BUILTIN_IGNORE`(新安装)/ `LEGACY_IGNORE_REMOVALS`(旧安装迁移)/ `BUILTIN_IGNORE_ENSURE`(v0.11 起确保补回的排除条目);
 - 补丁引擎:`lib/patches.js`;
 - 主入口与 API:`lib/index.js`;
 - 同步编排:`lib/sync.js`(`SyncEngine`)。
