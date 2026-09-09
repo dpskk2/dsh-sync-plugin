@@ -1,7 +1,7 @@
 {
   "name": "dsh-sync-plugin",
-  "version": "0.10.0",
-  "description": "DeepSeek Harness(DSH)会话与配置同步插件:通过你自己的 GitHub 私有仓库,在多台电脑间双向同步 DSH 会话、附件、工作区对应关系(workspace.json)、各工作区真实文件夹内容,以及设置(settings.yaml:字号/模型/第三方 provider/默认模型)与 API 密钥(.credentials.yaml)——个人私有仓库,配置与密钥默认一起同步。冲突时「双边保留」并把冲突呈现给用户抉择(仿 OneNote)。另托管跨机分发的 node_modules 补丁(patches/,内置 web_fetch 直连失败回退系统代理修复)。",
+  "version": "0.10.1",
+  "description": "DeepSeek Harness(DSH)会话与配置同步插件:通过你自己的 GitHub 私有仓库,在多台电脑间双向同步 DSH 会话、附件、工作区对应关系(workspace.json)、各工作区真实文件夹内容,以及设置(settings.yaml:字号/模型/第三方 provider/默认模型)与 API 密钥(.credentials.yaml)——个人私有仓库,配置与密钥默认一起同步。同步过程可视化:侧栏/设置实时显示当前阶段、各仓库上传下载字节与速度(进度条);git 凭据强制非交互(不再弹 GCM 窗口),gh 可用时自动使用 gh 凭据助手。冲突时「双边保留」并把冲突呈现给用户抉择(仿 OneNote)。另托管跨机分发的 node_modules 补丁(patches/,内置 web_fetch 直连失败回退系统代理修复)。",
   "keywords": [
     "dsh",
     "dsh-plugin",
