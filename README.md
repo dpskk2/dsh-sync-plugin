@@ -21,15 +21,14 @@ _English: Two-way sync of DSH sessions, workspace files, settings and patches be
 - 🛡️ **绝不丢数据**——两台电脑同时改了同一文件时「双边保留」:两边版本都留着,由你决定留哪个;
 - 🗂️ **归档会话管理**——设置里可列出全部会话(含已归档 / 幽灵),展开预览、取消归档或彻底删除。
 
-## 安装 / 升级 / 卸载
+
 
 ```powershell
-# 安装
-dsh plugin --profile web add dsh-sync-plugin
-
 # 升级
 dsh plugin --profile web update dsh-sync-plugin
+```
 
+```powershell
 # 卸载
 dsh plugin --profile web remove dsh-sync-plugin
 ```
