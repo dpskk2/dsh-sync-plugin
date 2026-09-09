@@ -95,6 +95,27 @@ dsh plugin --profile web remove dsh-sync-plugin
 | `workspaceBase` | `''` | 所有工作区统一放到该目录下(跨机路径不一致时建议配置) |
 | `proxy` | `''` | git 走代理(如 `http://127.0.0.1:7890`),直连 GitHub 慢时用 |
 
+## Git 凭据(为什么同步不再弹 git-credential-manager 窗口)
+
+同步用 git 与 GitHub 私有仓库,HTTPS 拉取/推送需要凭据。Windows 上 Git for Windows 的默认凭据助手是 **Git Credential Manager**(GCM,即 `git-credential-manager.exe`):本机没有存过 GitHub 凭据时,git 每次 fetch/push 都会启动它弹窗;若浏览器认证后凭据没能写进 Windows 凭据管理器(常见于浏览器拦截 localhost 回调),就会出现「认证完还反复弹、获取远端状态卡住」。
+
+v0.10.1 起插件强制 git **非交互凭据**(`GIT_TERMINAL_PROMPT=0` / `GCM_INTERACTIVE=never`):凭据缺失/过期时同步**秒级失败并给出明确指引,不再弹窗、不再反复等待**。
+
+**推荐配置(一次搞定,之后永不弹窗):**
+
+1. 安装 GitHub CLI:`winget install GitHub.cli`;
+2. 登录:`gh auth login`(浏览器或设备码都行,令牌存在 gh 自己的配置里,不依赖 Windows 凭据管理器);
+3. 重启 dsh,点「⟳ 同步」——插件检测到 gh 后自动把**本仓库**的凭据助手设为 `gh auth git-credential`,静默取令牌,不会再出现 GCM 窗口。
+
+**不装 gh 也行:** 在 GitHub → Settings → Developer settings → Personal access tokens 生成一个 `repo` 权限的 PAT,然后:
+
+```
+git config --global credential.helper store
+echo "https://你的用户名:<PAT>@github.com" > "%USERPROFILE%\.git-credentials"
+```
+
+> 注意 `.git-credentials` 是明文文件,只在你的私有机器上使用。也可改用 SSH:`remote` 填 `git@github.com:<用户名>/dsh-sync.git` 并配置 SSH 密钥,同样无弹窗。
+
 ## web_fetch 修复是怎么工作的(补丁管理)
 
 DSH 内置包(`@deepseek-ai/dsh-web-fetch-http`)的 bug 不能直接改 `node_modules`——依赖不随同步走,DSH 升级还会整体覆盖。插件把修复做成**随仓库同步的托管补丁**(存在 `~/.dsh/patches/web-fetch-http/`,天然入库、跨机分发),每次启动 / 同步后自动重新套用:
