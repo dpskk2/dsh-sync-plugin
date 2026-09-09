@@ -6,7 +6,6 @@
 > 在这台电脑按一下「⟳ 同步」,另一台电脑打开就是一模一样。
 
 **安装**
-
 ```powershell
 dsh plugin --profile web add dsh-sync-plugin
 ```
