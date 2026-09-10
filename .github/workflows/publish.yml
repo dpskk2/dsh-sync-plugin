@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write   # npm Trusted Publishing (OIDC):无需 NPM_TOKEN / 2FA,发布身份由 GitHub OIDC 提供
 
 jobs:
   publish:
@@ -20,7 +21,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Sanity check tag vs package version
         run: |
@@ -42,8 +42,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Publish to npm
+      - name: Publish to npm (Trusted Publishing / OIDC)
         if: env.ALREADY_PUBLISHED != 'true'
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance
