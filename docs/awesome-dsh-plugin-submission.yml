@@ -5,6 +5,8 @@
 # 然后发一个 PR(一个 PR 只加这一个文件)。
 # 官方指南:https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/blob/main/contributing.md
 #
+# 最近更新:2026-09-10 —— 同步 dsh 0.1.5-rc.1 对应的托管补丁重录;功能现状见 README。
+#
 # 收录前提(本插件均已满足):
 #  - package.json 声明了 dsh.bundle manifest(cordis.patch.yml)→ 可用 dsh plugin add 安装 ✓
 #  - 仓库有真实可用的代码、创建满 1 天、持续维护 ✓

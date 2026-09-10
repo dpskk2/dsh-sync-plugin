@@ -114,3 +114,4 @@
 - 补丁引擎:`lib/patches.js`;
 - 主入口与 API:`lib/index.js`;
 - 同步编排:`lib/sync.js`(`SyncEngine`)。
+> 最近更新:2026-09-10 —— 本文件随 v0.11.x 持续维护;dsh 0.1.5-rc.1 升级后托管补丁已按 rc.1 重录(web-fetch-http v3、session-format 拆单包)。
