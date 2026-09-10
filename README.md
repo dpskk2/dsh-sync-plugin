@@ -5,10 +5,17 @@
 > **API 密钥(`.credentials.yaml`)不上云**——换电脑重新登录,或走环境变量 `apiKeyEnv`。
 > 在这台电脑按一下「⟳ 同步」,另一台电脑打开就是一模一样。
 
-**安装(一行命令):**
-
+**安装**
 ```powershell
 dsh plugin --profile web add dsh-sync-plugin
+```
+**升级**
+```powershell
+dsh plugin --profile web update dsh-sync-plugin
+```
+**卸载**
+```powershell
+dsh plugin --profile web remove dsh-sync-plugin
 ```
 
 _English: Two-way sync of DSH sessions, workspace files, settings and patches between machines via your own private GitHub repo. API keys stay machine-local (re-login or `apiKeyEnv` on each machine). Installable with `dsh plugin add`._
@@ -20,19 +27,6 @@ _English: Two-way sync of DSH sessions, workspace files, settings and patches be
 - 📁 **工作区一起走**——每个工作区的真实文件夹内容也同步,目标机缺文件夹自动创建;
 - 🛡️ **绝不丢数据**——两台电脑同时改了同一文件时「双边保留」:两边版本都留着,由你决定留哪个;
 - 🗂️ **归档会话管理**——设置里可列出全部会话(含已归档 / 幽灵),展开预览、取消归档或彻底删除。
-
-## 安装 / 升级 / 卸载
-
-```powershell
-# 安装
-dsh plugin --profile web add dsh-sync-plugin
-
-# 升级
-dsh plugin --profile web update dsh-sync-plugin
-
-# 卸载
-dsh plugin --profile web remove dsh-sync-plugin
-```
 
 装完**重启 dsh**:侧栏左下角出现「⟳ 同步」按钮;「设置 → 同步」里有状态、详细结果与「立即同步」。
 
