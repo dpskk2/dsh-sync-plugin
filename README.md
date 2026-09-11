@@ -88,6 +88,7 @@ _English: Two-way sync of DSH sessions, workspace files, settings and patches be
 | `branch` | `main` | 同步分支 |
 | `workspaceBase` | `''` | 所有工作区统一放到该目录下(跨机路径不一致时建议配置) |
 | `proxy` | `''` | git 走代理(如 `http://127.0.0.1:7890`),直连 GitHub 慢时用 |
+| `autoRestartAfterRepair` | `false` | 同步后自查把会话补进登记表(修复「未分组」)时,**自动重启 dsh** 让新实例重建索引并加载修复版(浏览器短暂断开、刷新恢复);也可在 **设置 → 同步** 的开关直接切换 |
 
 ## Git 凭据(为什么同步不再弹 git-credential-manager 窗口)
 
