@@ -1,9 +1,12 @@
 # dsh-sync-plugin
 
-> 用你自己的 **GitHub 私有仓库**,在多台电脑之间**双向同步整个 DeepSeek Harness(DSH)**:
-> 会话、附件、工作区、设置(字号 / 模型 / 默认模型 / 第三方 API 配置)。
-> **API 密钥(`.credentials.yaml`)不上云**——换电脑重新登录,或走环境变量 `apiKeyEnv`。
-> 在这台电脑按一下「⟳ 同步」,另一台电脑打开就是一模一样。
+DeepSeek Harness(DSH)会话与配置同步插件:通过你自己的 GitHub 私有仓库,在多台电脑间双向同步 DSH 会话、附件、工作区、设置与补丁。
+
+- 💬 **会话不丢**——换电脑 / 换系统,对话记录、附件全部带过去;
+- ⚙️ **设置不丢**——字号、模型列表、默认模型、第三方 API 配置随仓库同步(冲突时**自动保留本机**);**API 密钥不上云**,换电脑重新登录或走环境变量 `apiKeyEnv`;
+- 📁 **工作区一起走**——每个工作区的真实文件夹内容也同步,目标机缺文件夹自动创建;
+- 🛡️ **绝不丢数据**——两台电脑同时改了同一文件时「双边保留」:两边版本都留着,由你决定留哪个;
+- 🗂️ **归档会话管理**——设置里可列出全部会话(含已归档 / 幽灵),展开预览、取消归档或彻底删除。
 
 **安装**
 ```powershell
@@ -17,16 +20,6 @@ dsh plugin --profile web update dsh-sync-plugin
 ```powershell
 dsh plugin --profile web remove dsh-sync-plugin
 ```
-
-_English: Two-way sync of DSH sessions, workspace files, settings and patches between machines via your own private GitHub repo. API keys stay machine-local (re-login or `apiKeyEnv` on each machine). Installable with `dsh plugin add`._
-
-## 为什么需要它
-
-- 💬 **会话不丢**——换电脑 / 换系统,对话记录、附件全部带过去;
-- ⚙️ **设置不丢**——字号、模型列表、默认模型、第三方 API 配置随仓库同步(冲突时**自动保留本机**);**API 密钥不上云**,换电脑重新登录或走环境变量 `apiKeyEnv`;
-- 📁 **工作区一起走**——每个工作区的真实文件夹内容也同步,目标机缺文件夹自动创建;
-- 🛡️ **绝不丢数据**——两台电脑同时改了同一文件时「双边保留」:两边版本都留着,由你决定留哪个;
-- 🗂️ **归档会话管理**——设置里可列出全部会话(含已归档 / 幽灵),展开预览、取消归档或彻底删除。
 
 装完**重启 dsh**:侧栏左下角出现「⟳ 同步」按钮;「设置 → 同步」里有状态、详细结果与「立即同步」。
 
@@ -100,34 +93,8 @@ v0.10.1 起插件强制 git **非交互凭据**(`GIT_TERMINAL_PROMPT=0` / `GCM_I
 
 1. 安装 GitHub CLI:`winget install GitHub.cli`;
 2. 登录:`gh auth login`(浏览器或设备码都行,令牌存在 gh 自己的配置里,不依赖 Windows 凭据管理器);
-3. 重启 dsh,点「⟳ 同步」——插件检测到 gh 后自动把**本仓库**的凭据助手设为 `gh auth git-credential`,静默取令牌,不会再出现 GCM 窗口。
-
-**不装 gh 也行:** 在 GitHub → Settings → Developer settings → Personal access tokens 生成一个 `repo` 权限的 PAT,然后:
-
-```
-git config --global credential.helper store
-echo "https://你的用户名:<PAT>@github.com" > "%USERPROFILE%\.git-credentials"
-```
+3. `~/.dsh/dsh-sync.json` 里填 `remote`(仓库地址)即可——git 会自动用 gh 的凭据。
 
 > 注意 `.git-credentials` 是明文文件,只在你的私有机器上使用。也可改用 SSH:`remote` 填 `git@github.com:<用户名>/dsh-sync.git` 并配置 SSH 密钥,同样无弹窗。
 
-## web_fetch 修复是怎么工作的(补丁管理)
-
-DSH 内置包(`@deepseek-ai/dsh-web-fetch-http`)的 bug 不能直接改 `node_modules`——依赖不随同步走,DSH 升级还会整体覆盖。插件把修复做成**随仓库同步的托管补丁**(存在 `~/.dsh/patches/web-fetch-http/`,天然入库、跨机分发),每次启动 / 同步后自动重新套用:
-
-- web_fetch 直连失败 → 自动回退系统代理;
-- 瞬态网络错误 → 自动重试;
-- 报错显示真实根因。
-
-套用后**重启 dsh 生效**(幂等,内容一致即跳过)。
-
-**不锚定版本号(补丁保持活动):** 补丁清单里的 `packageVersion` 只作**记录**,不作门槛。引擎按「内容比对」判定——只要目标文件与录制时备份的原始版(`patches/<名字>/original-*.js`)逐字节一致,说明上游基座文件没变,即使 DSH 升级让版本号与清单声明不符,也照常自动套用,**不需要重录**;只有上游文件**内容真的变了**才会标记「上游已升级,补丁待重录」,需要基于新版重录 payload。这样 DSH 每次升级后补丁都能保持活动,不会被版本号卡住。
-
-## 更多文档
-
-- [同步内容矩阵 / 历史问题成因 / DSH 更新后还能同步什么](docs/sync-content.md)
-- [awesome-dsh-plugin 收录投稿(已按官方格式写好)](docs/awesome-dsh-plugin-submission.yml)
-
-## License
-
-[MIT](./LICENSE) © 2026
+_English: Two-way sync of DSH sessions, workspace files, settings and patches between machines via your own private GitHub repo. API keys stay machine-local (re-login or `apiKeyEnv` on each machine). Installable with `dsh plugin add`._
