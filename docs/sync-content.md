@@ -55,7 +55,16 @@
 | `.anonymous-user-id` | 每台机器各自的匿名 ID |
 | `.dsh-sync.state.json` | 引擎自身状态 |
 | **`.credentials.yaml`** | **API 密钥不上云**(v0.10 曾放开同步,v0.11 重新排除)——跨机密钥走环境变量 `apiKeyEnv` 或在新机器重新登录 |
-| `.trash/`、`sessions.rar` 等 | 用户清理的遗留物 |
+| **`storages/workspace-local-paths.json`** | **工作区「换位置」的本机专属覆盖**(v0.11.7 起排除)——否则他机会用你的路径覆盖本机工作区位置 |
+| `.trash/`、`sessions.rar` 等 | 用户清理的遗留物(**默认排除见下注**) |
+| **`storages/workspace-local-paths.json`** | **工作区「换位置」覆盖(v0.11.7 起排除)——A 机的工作区位置不能决定 B 机** |
+
+> **默认排除的实际位置**:插件生成的 `BUILTIN_IGNORE`(见 `lib/sync.js`)包含机器本地状态、
+> `.credentials.yaml`、`**/node_modules/`、`.pnpm-store/`、`.dsh-sync.state.json`、
+> `storages/workspace-local-paths.json`、`workspace-repos/`;
+> 而 `.trash/`、`sessions.rar`、`.npm-cache/`、`logs/` 的若干本地产物,是在**本机 `~/.dsh/.gitignore`**
+> 里追加的(手工或历史迁移留下)。新机器克隆后,这些条目来自仓库里的 `.gitignore` 文件本身
+> (`.gitignore` 是被跟踪的,会随仓库带过去),因此跨机行为一致。
 
 > 想额外排除某个文件:在 `~/.dsh/.gitignore` 加一行即可,手工改动会被保留。
 
@@ -83,14 +92,16 @@
 **是的——补丁文件就存在 `~/.dsh` 里,并且随同步仓库跨机分发。** 分三层:
 
 1. **补丁本体在 `.dsh/patches/web-fetch-http/`**:
-   - `patch.json`——清单:目标包 `@deepseek-ai/dsh-web-fetch-http`、版本 `0.1.2-rc.1`、目标路径 `lib/index.js`、补丁标记、`enabled`;
+   - `patch.json`——清单:目标包 `@deepseek-ai/dsh-web-fetch-http`、版本 `0.1.5-rc.2`、目标路径 `lib/index.js`、补丁标记、`enabled`;
    - `lib-index.js`——**完整的目标文件**(修复后的整份代码,含代理回退 / 瞬态重试 / 真实根因报错);
    - `original-index.js`——首次套用时自动备份的原始文件(还原用)。
    因为 `patches/` 不在 `.gitignore`,它随主仓库提交,每台机器拉到后都有同一份补丁。
+   > 另有 `patches/session-format-v0-to-v1/` 与 `patches/session-format-v1-to-v2/`,同样按
+   > dsh `0.1.5-rc.2` 录制,修复旧会话格式迁移时的 provenance 容错(见「补丁管理」小节)。
 
 2. **套用动作在 `node_modules`(home 之外)**:插件启动时 / 每次同步后 / `sync_patches` 工具,调用 `lib/patches.js`:
-   - 找到本机安装的 `@deepseek-ai/dsh-web-fetch-http`(npm 全局根 + profile `node_modules`);
-   - 若目标文件与 payload 一致 →「已是最新」;带旧标记 → 覆盖升级;是原始版且包版本匹配 → 先备份原文件再覆盖;**包版本不匹配(DSH 升级过)→ 不盲写,标记 `needs-refresh`**;
+   - 找到本机安装的 `@deepseek-ai/dsh-web-fetch-http`(npm 全局根 + profile `node_modules` + 全局 dsh 的嵌套 `node_modules`);
+   - 若目标文件与 payload 一致 →「已是最新」;带旧标记 → 覆盖升级;**与 `original-*` 备份内容一致 → 上游基座未变,跨版本照常套用**(v0.11.5 起按内容比对,不锚定版本号);无备份且版本匹配 → 先备份原文件再覆盖;**内容偏离录制原始版 → 不盲写,标记 `needs-refresh`**(需基于新版重录);
    - 应用发生在 dsh 启动**之后**,当前进程加载的还是旧代码 → **重启 dsh 生效**。
 
 3. **修复效果**:web_fetch 直连失败自动回退系统代理;瞬态网络错误自动重试一次;报错显示真实根因(而不是笼统的「连接失败」)。
@@ -110,8 +121,9 @@
 
 ## 6. 相关文件
 
-- 默认排除列表定义:`lib/sync.js` → `BUILTIN_IGNORE`(新安装)/ `LEGACY_IGNORE_REMOVALS`(旧安装迁移)/ `BUILTIN_IGNORE_ENSURE`(v0.11 起确保补回的排除条目);
+- 默认排除列表定义:`lib/sync.js` → `BUILTIN_IGNORE`(新安装)/ `LEGACY_IGNORE_REMOVALS`(旧安装迁移)/ `BUILTIN_IGNORE_ENSURE`(确保补回的排除条目:`.credentials.yaml` / `.pnpm-store/` / `storages/workspace-local-paths.json`);
+- 会话日志候选名(登记自查/幽灵清理/预览/冲突预览共用一份口径):`lib/sync.js` → `SESSION_LOG_NAMES`;
 - 补丁引擎:`lib/patches.js`;
 - 主入口与 API:`lib/index.js`;
 - 同步编排:`lib/sync.js`(`SyncEngine`)。
-> 最近更新:2026-09-10 —— 本文件随 v0.11.x 持续维护;dsh 0.1.5-rc.1 升级后托管补丁已按 rc.1 重录(web-fetch-http v3、session-format 拆单包)。
+> 最近更新:2026-09-12(v0.11.7)—— 本文件随 v0.11.x 持续维护;托管补丁均按 dsh `0.1.5-rc.2` 录制(web-fetch-http、session-format-v0-to-v1、session-format-v1-to-v2)。

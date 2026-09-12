@@ -1,7 +1,7 @@
 {
   "name": "dsh-sync-plugin",
-  "version": "0.11.6",
-  "description": "DeepSeek Harness(DSH)会话与配置同步插件:通过你自己的 GitHub 私有仓库,在多台电脑间双向同步 DSH 会话、附件、工作区对应关系(workspace.json)、各工作区真实文件夹内容与设置(settings.yaml:字号/模型/第三方 provider/默认模型/权限默认,冲突自动取本机)。同步过程可视化:侧栏/设置实时显示当前阶段、各仓库上传下载字节与速度(进度条);git 凭据强制非交互(不再弹 GCM 窗口),gh 可用时自动使用 gh 凭据助手。API 密钥(.credentials.yaml)与依赖缓存(.pnpm-store/)不上云——跨机密钥走 apiKeyEnv 环境变量或重新登录。会话日志冲突按时间自动合并,workspace.json 并集合并+同路径去重(两台电脑同目录双登记只留其一),配置文件冲突文本 diff 预览+双边保留;合并冲突绝不留标记(守卫),防页面/文档空白。另托管跨机分发的 node_modules 补丁(patches/,内置 web_fetch 直连失败回退系统代理修复),补丁引擎按内容比对、不锚定版本号——DSH 升级但基座文件未变时跨版本自动套用,无需重录。",
+  "version": "0.11.7",
+  "description": "DeepSeek Harness(DSH)会话与配置同步插件:通过你自己的 GitHub 私有仓库,在多台电脑间双向同步 DSH 会话、附件、工作区对应关系(workspace.json)、各工作区真实文件夹内容与设置(settings.yaml:字号/模型/第三方 provider/默认模型/权限默认,冲突自动取本机)。同步过程可视化:侧栏/设置实时显示当前阶段、各仓库上传下载字节与速度(进度条);git 凭据强制非交互(不再弹 GCM 窗口),gh 可用时自动使用 gh 凭据助手。API 密钥(.credentials.yaml)与依赖缓存(.pnpm-store/)不上云——跨机密钥走 apiKeyEnv 环境变量或重新登录。会话日志冲突按时间自动合并,workspace.json 并集合并+同路径去重(两台电脑同目录双登记只留其一),配置文件冲突文本 diff 预览+双边保留;合并冲突绝不留标记(守卫),防页面/文档空白。工作区路径覆盖(「换位置」)是本机专属设置,不随仓库同步。另托管跨机分发的 node_modules 补丁(patches/:web_fetch 代理回退修复 + 会话格式迁移容错),补丁引擎按内容比对、不锚定版本号——DSH 升级但基座文件未变时跨版本自动套用,无需重录。",
   "keywords": [
     "dsh",
     "dsh-plugin",

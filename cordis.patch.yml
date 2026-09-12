@@ -1,7 +1,7 @@
 # dsh-sync-plugin bundle patch
 # 安装:dsh plugin --profile web add dsh-sync-plugin
 # pnpm 装完依赖后,dsh 会把"声明了 dsh.bundle 的依赖"自动追加进 bundle 层,这里挂本插件自己。
-# 本文件自 v0.3.2 起随仓库维护,内容幂等;当前版本见 package.json(v0.11.4)。
+# 本文件自 v0.3.2 起随仓库维护,内容幂等;当前版本见 package.json。
 - insert:
     - id: dsh-sync-plugin
       name: dsh-sync-plugin

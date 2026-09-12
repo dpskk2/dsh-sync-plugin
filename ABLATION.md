@@ -1,8 +1,14 @@
 # 消融实验记录 —— 去掉不必要的抽象与设计
 
+> **状态说明(2026-09-12,v0.11.7)**:本文是 **v0.11.1 基准**的历史记录,不是当前代码的度量。
+> 之后 v0.11.2~v0.11.6 又加回了「工作区路径覆盖 / 自动重启修复 / 幽灵清理 / 归档会话管理」等
+> 功能,行数与结论已变化;v0.11.7 又做了一轮性能消融(见文末「v0.11.7 增补」)。
+> 各版本行数对照(v0.11.1 → v0.11.7):`sync.js` 1714 → 2127、`index.js` 818 → 920、
+> `client.js` — → 849、`patches.js` 157 → 195。**引用本文数字前请先看文末增补。**
+
 > 目的:对 dsh-sync-plugin(v0.11.1 基准)做系统性消融 —— 逐项识别并移除不必要的抽象、间接层与死代码,每移除一项都以「语法检查 + 冒烟测试 + 临时目录端到端集成测试」验证功能不受影响。
 >
-> 结果:`lib/` 净删 **163 行**(+109 / −272):`sync.js` 1896→1714 行(−9.6%)、`index.js` 870→818(−6%)、`patches.js` 186→157(−15.6%)。全部行为保持,提交 `6bb4205`。
+> 结果:`lib/` 净删 **163 行**(+109 / −272):`sync.js` 1896→1714 行(−9.6%)、`index.js` 870→818(−6%)、`patches.js` 186→157(−15.6%)。全部行为保持,提交在当时的开发分支上(该分支已随 v0.11.2 之后的工作并入主线,提交号不再单独可查)。
 
 ## 方法
 
@@ -38,9 +44,28 @@
 - **测试误连真实仓库**:集成测试临时 home 未写 `autoRepo:false` 时,引擎默认 `autoRepo:true`,会经 gh 自动探测并把临时目录连到真实 GitHub 同步仓库(曾误推 6 个垃圾提交,经用户同意已 `git push origin 608cc49:main --force` 恢复)。`verify.mjs` / `ws-integration-test.mjs` 已全部显式 `autoRepo:false`。
 - 教训已记入 `~/.dsh/memory/lessons.md`。
 
+## 附:v0.11.7 增补消融/性能(2026-09-12,实测)
+
+| 项 | 改动 | 实测收益 |
+|---|---|---|
+| 登记表自查重复解析 | `repairWorkspaceRegistry` 每轮跑 2 次且解析**全部**会话头取 cwd → 只解析「登记表里没有的」会话,并按 `(文件,size,mtime)` 缓存解析结果 | 真实 22 会话 home:**30.5ms → 2.3ms/次(−92%)**,补登记结果逐字一致 |
+| 4 份重复的会话目录扫描 | 新增 `SyncEngine.scanSessions()` / `localSessionIds()`,登记表自查 / 幽灵清理 / 并集合并幽灵剔除共用 | 删掉 3 段重复的 `readdir + 正则` 循环 |
+| 会话文件候选名散落 | 新增导出常量 `SESSION_LOG_NAMES`,`sync.js` 与 `index.js` 预览共用 | 根除「预览漏 v3」这类漏项(v0.11.7 修的真实缺陷) |
+| 工作区影子仓库配置 | 每轮每工作区 10+ 次 `git config` → 一次 `git config --get-regexp` + 差异写入 + 进程内已应用标记 | 空转轮每工作区 git 调用 **34~40 → 13~17**;整轮 **56 → 32 次** |
+| 工作区空转快路径 | 本地头 == 远端头且工作树干净 → 直接返回(不提交/不推送) | 与上一条共同把空转轮从 2.8s 降到 **2.2s** |
+| 冲突扫描重复调用 | `outstandingConflicts()` 结果缓存 15s、每轮同步结束失效;`pruneCacheConflicts` 改用只扫主仓库的 `mainConflictCopies()` | 首次 181ms,重复调用 **0ms**;每轮同步少一次全工作区扫描 |
+| `git gc` 触发条件 | 原来只在「本进程 ≥20 次提交」后回收 → 增加 loose 体积阈值(≥64MB 或 ≥5000 个 loose 对象) | 真实仓库 loose 曾堆积 **142MB** 长期不回收 |
+| 孤儿影子仓库可见性 | 新增 `reportOrphanWorkspaceRepos()`(24h 一次,只提示不自动删) | 真实机器 `workspace-repos/` 156MB 中 **153MB 是孤儿** |
+| 轮询频率 | 侧栏按钮 + 设置分节各 500ms 轮询 `/api/progress` → 1s | 同步期间请求数减半(两处组件合计 4 req/s → 2 req/s) |
+
+> 未做(评估后判定收益/风险不划算):`commitIfDirty` 与 `commitWorkspaceIfDirty` 的双份实现合并
+> (共用同一个 `lastCommitAt` 节流时钟,改动面大);客户端 `useSync` 提升为模块级共享 store
+> (收益是请求数,已用降频达成)。
+
 ## 复现验证
 
 ```powershell
-node verify.mjs               # 语法 + 模块加载 + 冒烟 + 主仓库端到端
-node ws-integration-test.mjs  # 工作区影子仓库端到端
+node verify.mjs                # 语法 + 模块加载 + 冒烟 + 主仓库端到端
+node ws-integration-test.mjs   # 工作区影子仓库端到端
+node regression-v0117-test.mjs # v0.11.7 四项缺陷回归(隔离临时 home + 本地 bare 远端)
 ```
