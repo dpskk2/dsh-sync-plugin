@@ -2,8 +2,6 @@
 
 给 DeepSeek Harness 带来变成「云文档」的同步体验
 
----
-
 ## 安装
 
 ```powershell
@@ -12,6 +10,7 @@ dsh plugin --profile web add dsh-sync-plugin
 
 装完**重启 dsh**：侧栏左下角出现「⟳ 同步」按钮；「设置 → 同步」里有状态、详细结果与「立即同步」。
 
+---
 升级 / 卸载：
 
 ```powershell
