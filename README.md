@@ -35,33 +35,7 @@ dsh plugin --profile web remove dsh-sync-plugin   # 卸载
 
 > 装好 gh 并 `gh auth login` 后，第 1、2 步可跳过：直接点同步，插件自动创建/复用私有仓库并写回配置。
 
-## 同步什么
-
-| ✅ 会同步 | ❌ 不会同步 |
-| --- | --- |
-| 会话记录与附件（`sessions/`、`attachments/`） | 窗口大小、用量统计、匿名 ID |
-| 工作区 ↔ 会话对应关系（`workspace.json`） | 依赖目录（`node_modules/`、`.pnpm-store/`） |
-| 设置（`settings.yaml`：字号 / 模型 / 默认模型 / 第三方 API） | **API 密钥（`.credentials.yaml`）— 不上云** |
-| 各工作区真实文件夹内容（→ 远端 `ws/<工作区Id>` 分支） | 回收站、引擎本地状态、**工作区路径覆盖** |
-| 已装插件清单、node_modules 补丁（`patches/`） | 各机器各自的工作区位置 |
-
 > 🔒 **隐私**：纯个人私有仓库；不想同步的文件在 `~/.dsh/.gitignore` 加一行即可。
-
-## 冲突自动合并，零人工裁决
-
-两台电脑**同时改了同一处**也不怕 —— 按文件类型分层自动合并，任何一方的数据都不丢，也**不会残留冲突标记**：
-
-| 文件类型 | 合并方式 |
-| --- | --- |
-| 会话日志 | **CRDT 并集**：两边新增的消息合进同一会话，按时间序排好 |
-| `workspace.json`（工作区登记表） | **并集合并 + 同路径去重**：双方工作区与会话映射都保留 |
-| `settings.yaml` / JSON 配置 | **字段级 CRDT**：两边改不同字段都保留；改同一字段按时钟决出确定性赢家 |
-| 补丁元数据（`.vmap.json`） | **并集合并** |
-| 其余文件（opaque） | **确定性取本机**，远端版本另存 `backup/<时间戳>` 分支（不丢） |
-| 可再生文件（cache/logs） | 不追踪、不同步 |
-| `.credentials.yaml`（API 密钥） | **永不合并、永远本机**（且根本不上云） |
-
-**无需「保留本机 / 采用远端 / 两侧都留」这类人工裁决** —— 合并由引擎自动完成，冲突列表只作只读审计展示。
 
 ## 实现方式
 
@@ -124,5 +98,3 @@ node ungrouped-fix-test.mjs      # 未分组修复回归
 > 所有测试都在临时目录内运行并显式 `autoRepo: false` —— 不会连到真实同步仓库。
 
 ---
-
-_English: Two-way sync of DSH sessions, workspace files, settings and patches between machines via your own private GitHub repo — with automatic conflict merging (CRDT) and cross-machine convergence. API keys stay machine-local._
