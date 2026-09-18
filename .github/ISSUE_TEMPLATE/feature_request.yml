@@ -1,0 +1,14 @@
+name: 使用建议 / Feature request
+description: 描述你的使用场景和希望减少的步骤。
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景 / Use case
+      description: 你想完成什么？现在最麻烦的是哪一步？
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 希望如何改进 / Suggested improvement

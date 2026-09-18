@@ -1,128 +1,90 @@
-# dsh-sync-plugin
+# DSH Sync · 换台电脑，接着做
 
-给 DeepSeek Harness 带来变成「云文档」的同步体验
+**把 DeepSeek Harness 的会话、附件、设置和工作区文件，同步到你的另一台电脑。**
 
-## 安装
+数据通过你自己的 GitHub 仓库传输。推荐使用私有仓库；默认手动同步，也可开启自动同步。
 
-```powershell
+[![npm version](https://img.shields.io/npm/v/dsh-sync-plugin)](https://www.npmjs.com/package/dsh-sync-plugin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/dpskk2/dsh-sync-plugin/blob/main/LICENSE)
+
+[开始使用](#开始使用) · [接入第二台电脑](#接入第二台电脑) · [常见问题](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题) · [English](https://github.com/dpskk2/dsh-sync-plugin/blob/main/README.en.md)
+
+![同步流程示意：电脑 A 的会话、设置和文件，通过自己的私有 GitHub 仓库传到电脑 B；手动或定时同步，非实时协作](https://raw.githubusercontent.com/dpskk2/dsh-sync-plugin/main/docs/assets/sync-flow.svg)
+
+## 什么时候用得上
+
+- **台式机切到笔记本**：出门前同步，另一台电脑取回会话和工作区文件，继续处理同一个项目。
+- **重装或换电脑**：从自己的仓库取回已同步的数据，再配置这台机器的 API 密钥与依赖。
+- **少做重复配置**：模型设置、字号、插件清单随数据同步；插件依赖仍需在新机器安装。
+
+这是面向个人多机使用的同步插件。两台电脑交替使用时，建议**开始前同步一次，结束后再同步一次**。它不是实时协同编辑，也不是独立的灾难备份。
+
+## 开始使用
+
+需要能正常运行的 **DSH Web**、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
+
+### 1. 安装插件
+
+```sh
 dsh plugin --profile web add dsh-sync-plugin
 ```
 
-装完**重启 dsh**：侧栏左下角出现「⟳ 同步」按钮；「设置 → 同步」里有状态、详细结果与「立即同步」。
+重启 DSH。侧栏左下角会出现 **「⟳ 同步」**，设置里会出现 **「同步」** 页面。
 
----
-升级 / 卸载：
+### 2. 登录 GitHub
 
-```powershell
-dsh plugin --profile web update dsh-sync-plugin   # 升级
-```
-```powershell
-dsh plugin --profile web remove dsh-sync-plugin   # 卸载
-```
+在运行 DSH 的同一台电脑、同一系统用户下执行：
 
-> 前置：装好 [git](https://git-scm.com)；推送 GitHub 需要凭据（推荐 [gh CLI](https://cli.github.com) 登录，永不弹窗，见文末「Git 凭据」）。
-
-## 首次使用（2 分钟）
-
-1. 在 GitHub 建一个**私有**仓库（如 `dsh-sync`）；
-2. 编辑 `~/.dsh/dsh-sync.json`：
-
-   ```json
-   { "remote": "https://github.com/你的用户名/dsh-sync.git" }
-   ```
-
-3. 点「⟳ 同步」— 自动初始化本地仓库并全量上传。完成 🎉
-
-> 装好 gh 并 `gh auth login` 后，第 1、2 步可跳过：直接点同步，插件自动创建/复用私有仓库并写回配置。
-
-## 同步什么
-
-| ✅ 会同步 | ❌ 不会同步 |
-| --- | --- |
-| 会话记录与附件（`sessions/`、`attachments/`） | 窗口大小、用量统计、匿名 ID |
-| 工作区 ↔ 会话对应关系（`workspace.json`） | 依赖目录（`node_modules/`、`.pnpm-store/`） |
-| 设置（`settings.yaml`：字号 / 模型 / 默认模型 / 第三方 API） | **API 密钥（`.credentials.yaml`）— 不上云** |
-| 各工作区真实文件夹内容（→ 远端 `ws/<工作区Id>` 分支） | 回收站、引擎本地状态、**工作区路径覆盖** |
-| 已装插件清单、node_modules 补丁（`patches/`） | 各机器各自的工作区位置 |
-
-> 🔒 **隐私**：纯个人私有仓库；不想同步的文件在 `~/.dsh/.gitignore` 加一行即可。
-
-## 冲突自动合并，零人工裁决
-
-两台电脑**同时改了同一处**也不怕 —— 按文件类型分层自动合并，任何一方的数据都不丢，也**不会残留冲突标记**：
-
-| 文件类型 | 合并方式 |
-| --- | --- |
-| 会话日志 | **CRDT 并集**：两边新增的消息合进同一会话，按时间序排好 |
-| `workspace.json`（工作区登记表） | **并集合并 + 同路径去重**：双方工作区与会话映射都保留 |
-| `settings.yaml` / JSON 配置 | **字段级 CRDT**：两边改不同字段都保留；改同一字段按时钟决出确定性赢家 |
-| 补丁元数据（`.vmap.json`） | **并集合并** |
-| 其余文件（opaque） | **确定性取本机**，远端版本另存 `backup/<时间戳>` 分支（不丢） |
-| 可再生文件（cache/logs） | 不追踪、不同步 |
-| `.credentials.yaml`（API 密钥） | **永不合并、永远本机**（且根本不上云） |
-
-**无需「保留本机 / 采用远端 / 两侧都留」这类人工裁决** —— 合并由引擎自动完成，冲突列表只作只读审计展示。
-
-## 实现方式
-
-- **传输层**：纯 git。你自己的私有仓库做主数据（会话/设置/登记表），各工作区内容推到 `ws/<工作区Id>` 分支；凭据强制非交互（不弹 GCM 窗口），有 gh 时自动用 gh 凭据。
-- **合并层**：内置分层合并引擎（`lib/merge.js`），先按文件类型分类，再走对应合并器——会话日志用 G-Set 并集，配置用 **LWW-Map + vmap 边车**（`storages/sync-meta/<文件>.vmap.json` 记录每个字段的 Lamport 时钟 `{t, actor}` 做字段级三路合并）。
-- **一致性**：靠「并集/字段级合并 + 确定性裁决」让两台机器**收敛到同一结果**，而不是「后提交覆盖先提交」。
-- **自愈**：同步后自动把新会话补进工作区登记表（修「未分组」），并可配置**自动重启 dsh 重建索引**让侧栏立即归位。
-- **零依赖**：纯 ESM，无运行时依赖；自带一个手写 YAML 子集解析器做字段级合并。
-
-> 想深入看合并引擎的取舍与边界：见 [docs/merge-engine-refactor.md](docs/merge-engine-refactor.md)。
-
-## 常用配置（`~/.dsh/dsh-sync.json`）
-
-| 字段 | 默认 | 说明 |
-| --- | --- | --- |
-| `mode` | `manual` | `auto` = 启动拉取 + 周期同步 + 对话结束后去抖提交 |
-| `remote` | `''` | 私有仓库地址；留空则只做本地快照 |
-| `workspaceSync` | `true` | 是否同步各工作区真实文件夹内容 |
-| `autoRestartAfterRepair` | `false` | 同步补登记会话后**自动重启 dsh**（消除「未分组」，浏览器短暂断开） |
-| `intervalSeconds` | `300` | 自动模式周期 |
-| `proxy` | `''` | git 走代理（如 `http://127.0.0.1:7890`） |
-| `workspaceBase` | `''` | 所有工作区统一放到该目录下（跨机路径不一致时建议配置） |
-| `patches` | `true` | 是否套用 `.dsh/patches/` 下的 node_modules 补丁 |
-| `extraIgnore` | `[]` | 追加到 `.gitignore` 的条目 |
-
-> 这里只列常用项；其余字段（提交身份、自动建仓参数等）默认即可。同步内容的完整矩阵见 [docs/sync-content.md](docs/sync-content.md)。
-
-## 补丁管理（patches/）
-
-DSH 内置包（如 `web_fetch`）的本地修复需要改 `node_modules`，但它不随仓库走、DSH 升级还会覆盖。插件把补丁目录随仓库同步，并在每台机器上**按内容比对自动重新套用**（不锚定版本号，DSH 升级但基座文件未变时跨版本照常套用；基座已变则不盲写，提示重录）。
-
-## Git 凭据（为什么不弹窗）
-
-插件强制 git 非交互凭据（`GIT_TERMINAL_PROMPT=0`），凭据缺失时秒级失败并给指引，绝不卡在弹窗。**一次配置、永不再弹：**
-
-```powershell
-winget install GitHub.cli
-gh auth login            # 令牌存 gh 配置里，不依赖 Windows 凭据管理器
+```sh
+gh auth login
+gh auth status
 ```
 
-也可用 SSH：`remote` 填 `git@github.com:<用户名>/dsh-sync.git`。
+登录时选择 GitHub.com 和 HTTPS。已有同名 `dsh-sync` 仓库时，**先确认它是你准备用于同步的私有仓库**。
 
-## 更新记录
+### 3. 点一次「⟳ 同步」
 
-- **v0.12.2**：重建索引触发覆盖「同步前补登记」的场景 —— 新会话归位后必然重启，彻底消除「同步后出现未分组」。
-- **v0.12.1**：根治「未分组」——修复登记表三处缺陷（归档会话不再被塞回工作区、清理历史双登记、拉取到新会话即触发重建索引）。
-- **v0.12.0**：**分层合并引擎替换 git 冲突兜底** —— 会话日志 CRDT 并集、配置字段级 CRDT、opaque 确定性取本机 + 备份分支，**零人工裁决、跨机收敛**。
+没有配置仓库地址时，插件会尝试通过 `gh` 创建或复用账号下的 `dsh-sync` 仓库，并保存配置。新建仓库使用私有可见性。
 
-## 测试
+打开 **设置 → 同步**，确认显示了仓库地址、同步完成，且没有工作区失败信息。只有“本地快照”说明尚未上传到另一台电脑可访问的仓库。
 
-```powershell
-cd 同步插件
-node verify.mjs                  # 语法 + 模块加载 + 冒烟 + 主仓库端到端
-node merge-engine-test.mjs       # 分层合并引擎
-node merge-integration-test.mjs  # 双机收敛
-node ungrouped-fix-test.mjs      # 未分组修复回归
-# …其余 13 项测试，见仓库根目录 *.test.mjs / *-test.mjs
+> 默认也会上传工作区文件。如果只想同步会话与设置，在首次同步前关闭设置页的「同步工作区文件」。不使用 `gh`、已有仓库或需要 SSH？见[手动连接仓库](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#手动连接仓库)。
+
+## 接入第二台电脑
+
+1. 在第二台电脑安装 DSH、Git、`gh` 和本插件，重启 DSH。
+2. 用**同一个 GitHub 账号**执行 `gh auth login`。如果第一台使用默认的 `dsh-sync` 仓库，点同步即可尝试复用它；自定义仓库则填写与第一台相同的 `remote`。
+3. 点「⟳ 同步」，检查设置页的仓库地址与结果。同步成功后，重新启动 DSH，让取回的设置和会话索引加载完整。
+4. 在第二台配置 API 密钥，并按需安装插件和项目依赖。工作区位置不合适时，使用同步结果中的「换位置」。
+
+**验证接通：**在 A 创建一条测试会话 → A 同步 → B 同步 → 在 B 找到这条会话。再从 B 新建一条会话同步回 A，验证双向传输。
+
+> 专用凭据文件 `.credentials.yaml` 排除同步，但聊天、附件或项目文件里的密钥仍可能上传。首次同步前请查看[同步范围、排除方法与合并边界](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/sync-content.md)。
+
+## 日常使用
+
+- **手动同步**：侧栏「⟳ 同步」或设置页「立即同步」。
+- **自动同步**：设置 → 同步 → 同步偏好，保存为自动模式后重启 DSH。默认约每 5 分钟同步，并响应会话活动。
+- **遇到问题**：先看设置页的同步详情，再查[排障指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题)。
+
+```sh
+# 升级后重启 DSH
+dsh plugin --profile web update dsh-sync-plugin
+
+# 卸载插件
+dsh plugin --profile web remove dsh-sync-plugin
 ```
 
-> 所有测试都在临时目录内运行并显式 `autoRepo: false` —— 不会连到真实同步仓库。
+卸载插件不会自动删除已有的本地数据或 GitHub 同步仓库。
 
----
+## 继续了解
 
-_English: Two-way sync of DSH sessions, workspace files, settings and patches between machines via your own private GitHub repo — with automatic conflict merging (CRDT) and cross-machine convergence. API keys stay machine-local._
+- [安装、换机与排障](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)
+- [配置参考](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/configuration.md)
+- [同步内容与合并边界](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/sync-content.md)
+- [补丁管理](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/configuration.md#补丁管理)
+- [开发与验证](https://github.com/dpskk2/dsh-sync-plugin/blob/main/CONTRIBUTING.md)
+- [更新记录](https://github.com/dpskk2/dsh-sync-plugin/blob/main/CHANGELOG.md)
+- [报告问题 / 提出建议](https://github.com/dpskk2/dsh-sync-plugin/issues)
+
+如果它帮你省去了换机搬运数据的麻烦，欢迎 Star 或分享你的使用场景。反馈安装卡在哪一步，同样很有帮助。

@@ -1,20 +1,32 @@
 {
   "name": "dsh-sync-plugin",
-  "version": "0.12.3",
-  "description": "把 DeepSeek Harness 变成「云文档」:会话、设置、工作区经你自己的 GitHub 私有仓库在多台电脑间双向同步,像云文档一样跨机收敛。冲突按文件类型分层自动合并(会话日志 CRDT 并集、配置字段级 CRDT),零人工裁决;API 密钥不上云。",
+  "version": "0.12.4",
+  "description": "DeepSeek Harness 多电脑同步：通过自己的 GitHub 仓库同步会话、附件、设置和工作区文件。Sync DSH sessions, settings and workspace files across computers.",
   "keywords": [
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
     "sync",
-    "backup"
+    "backup",
+    "session-sync",
+    "workspace-sync",
+    "github",
+    "multi-device"
   ],
   "type": "module",
+  "scripts": {
+    "test": "node --test tests/preferences.test.mjs && node patch-version-agnostic-test.mjs"
+  },
   "main": "lib/index.js",
   "files": [
     "lib",
     "cordis.patch.yml",
     "README.md",
+    "README.en.md",
+    "docs/getting-started.md",
+    "docs/configuration.md",
+    "docs/sync-content.md",
+    "docs/assets",
     "LICENSE"
   ],
   "dsh": {

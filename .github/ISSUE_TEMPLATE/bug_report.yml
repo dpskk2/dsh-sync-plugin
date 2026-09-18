@@ -1,0 +1,33 @@
+name: 安装或同步遇到问题 / Bug report
+description: 告诉我们卡在哪一步，帮助复现并修复。
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "请先查看 README 的排障指南。提交前删除日志中的令牌、私有仓库地址、用户名路径与聊天内容。"
+  - type: textarea
+    id: environment
+    attributes:
+      label: 运行环境 / Environment
+      description: 操作系统、DSH 版本、插件版本、Node.js 版本；是否在两台电脑间同步。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 卡在哪一步 / Steps to reproduce
+      description: 安装、登录、首次上传、第二台接入，或日常同步？请写出操作步骤。
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 预期与实际结果 / Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 脱敏后的错误 / Redacted error
+      description: 设置 → 同步的错误详情。请勿上传完整会话或凭据文件。
+      render: text

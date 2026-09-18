@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">DSH Sync · 换台电脑，接着做</title>
+  <desc id="desc">流程示意，非界面截图。电脑 A 和电脑 B 通过自己的 GitHub 私有仓库交换会话、设置与工作区文件。支持手动或定时同步。</desc>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#101f3d"/><stop offset="1" stop-color="#102b32"/></linearGradient></defs>
+  <rect width="1200" height="360" rx="24" fill="url(#bg)"/>
+  <g font-family="Segoe UI, Microsoft YaHei, sans-serif">
+    <text x="52" y="62" fill="#f5f8ff" font-size="28" font-weight="700">换台电脑，接着聊、接着做。</text>
+    <text x="52" y="95" fill="#c0ccdf" font-size="16">会话 · 附件 · 设置 · 工作区文件</text>
+    <g fill="#1d3450" stroke="#526d8c"><rect x="52" y="139" width="270" height="132" rx="16"/><rect x="440" y="139" width="320" height="132" rx="16"/><rect x="878" y="139" width="270" height="132" rx="16"/></g>
+    <g fill="#f5f8ff" font-size="23" text-anchor="middle" font-weight="600"><text x="187" y="191">电脑 A</text><text x="600" y="191">你的 GitHub 私有仓库</text><text x="1013" y="191">电脑 B</text></g>
+    <g fill="#c0ccdf" font-size="16" text-anchor="middle"><text x="187" y="230">结束前同步</text><text x="600" y="230">数据存到自己的账号下</text><text x="1013" y="230">开始前同步</text></g>
+    <g stroke="#6de1c2" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M344 205h74m-10-8 10 8-10 8m-54-16-10 8 10 8"/><path d="M782 205h74m-10-8 10 8-10 8m-54-16-10 8 10 8"/></g>
+    <text x="52" y="319" fill="#c0ccdf" font-size="15">手动 / 定时同步 · 专用凭据文件排除同步 · 每台电脑单独配置 API 密钥</text>
+    <text x="1148" y="319" fill="#a1b4ce" font-size="14" text-anchor="end">流程示意 · 非实时协作</text>
+  </g>
+</svg>
