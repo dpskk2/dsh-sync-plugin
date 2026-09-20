@@ -9,7 +9,7 @@
 [![npm version](https://img.shields.io/npm/v/dsh-sync-plugin)](https://www.npmjs.com/package/dsh-sync-plugin)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/dpskk2/dsh-sync-plugin/blob/main/LICENSE)
 
-[开始使用](#开始使用) · [接入第二台电脑](#接入第二台电脑) · [常见问题](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题) · [English](https://github.com/dpskk2/dsh-sync-plugin/blob/main/README.en.md)
+[开始使用（主数据首次上云）](#开始使用（主数据首次上云）) · [接入第二台电脑](#接入第二台电脑) · [常见问题](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题) · [English](https://github.com/dpskk2/dsh-sync-plugin/blob/main/README.en.md)
 
 ![同步流程示意：电脑 A 的会话、设置和文件，通过自己的私有 GitHub 仓库传到电脑 B；手动或定时同步，非实时协作](https://raw.githubusercontent.com/dpskk2/dsh-sync-plugin/main/docs/assets/sync-flow.svg)
 
@@ -21,7 +21,7 @@
 
 这是面向个人多机使用的同步插件。两台电脑交替使用时，建议**开始前同步一次，结束后再同步一次**。它不是实时协同编辑，也不是独立的灾难备份。
 
-## 开始使用
+## 开始使用（主数据首次上云）
 
 需要能正常运行的 [DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
 
