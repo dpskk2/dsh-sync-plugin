@@ -23,7 +23,7 @@
 
 ## 开始使用（主数据首次上云）
 
-需要能正常运行的 [DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
+需要能正常运行的 [DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络（）。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
 
 ### 1. 安装插件
 
@@ -42,7 +42,19 @@ gh auth login
 gh auth status
 ```
 
-登录时选择"GitHub.com"和"HTTPS"。已有同名`dsh-sync`仓库时，**先确认它是你准备用于同步的私有仓库**。
+登录时选择 "GitHub.com" 和 "HTTPS"。已有同名`dsh-sync`仓库时，**先确认它是你准备用于同步的私有仓库**。
+
+### 2.1 根据网络情况可能需要配置代理（****替换成你的代理端口）
+
+如
+
+```bash
+git config --global http.proxy http://127.0.0.1:****
+```
+```bash
+git config --global https.proxy http://127.0.0.1:****
+```
+
 
 ### 3. 点一次「⟳ 同步」
 
@@ -54,18 +66,18 @@ gh auth status
 
 ## 接入第二台电脑
 
-1. 在第二台电脑安装[DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)、[GitHub CLI](https://cli.github.com/) 和本插件，重启 DSH。
+1. 在第二台电脑安装 [DSH Web](https://www.deepseek.com/harness/)、 [Git](https://git-scm.com/downloads)、 [GitHub CLI](https://cli.github.com/)  和本插件，重启 DSH。
 2. 用**同一个 GitHub 账号**执行 `gh auth login`。如果第一台使用默认的 `dsh-sync` 仓库，点同步即可尝试复用它；自定义仓库则填写与第一台相同的 `remote`。
 3. 点「⟳ 同步」，检查设置页的仓库地址与结果。同步成功后，重新启动 DSH，让取回的设置和会话索引加载完整。
 4. 在第二台配置 API 密钥，并按需安装插件和项目依赖。工作区位置不合适时，使用同步结果中的「换位置」。
 
-**验证接通：**在 A 创建一条测试会话 → A 同步 → B 同步 → 在 B 找到这条会话。再从 B 新建一条会话同步回 A，验证双向传输。
+**验证接通**：在 A 创建一条测试会话 → A 同步 → B 同步 → 在 B 找到这条会话。再从 B 新建一条会话同步回 A，验证双向传输。
 
 > 专用凭据文件 `.credentials.yaml` 排除同步，但聊天、附件或项目文件里的密钥仍可能上传。首次同步前请查看[同步范围、排除方法与合并边界](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/sync-content.md)。
 
 ## 日常使用
 
-- **手动同步**：侧栏「⟳ 同步」或设置页「立即同步」。
+- **手动同步**：侧栏「⟳ 同步」或设置页 → 同步「立即同步」。
 - **自动同步**：设置 → 同步 → 同步偏好，保存为自动模式后重启 DSH。默认约每 5 分钟同步，并响应会话活动。
 - **遇到问题**：先看设置页的同步详情，再查[排障指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题)。
 
