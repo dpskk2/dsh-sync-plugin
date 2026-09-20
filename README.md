@@ -87,7 +87,7 @@ set HTTP_PROXY=http://127.0.0.1:7890
 - **遇到问题**：先看设置页的同步详情，再查[排障指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题)。
 
 ```sh
-# 升级后重启 DSH
+# 升级插件
 dsh plugin --profile web update dsh-sync-plugin
 ```
 ```sh
