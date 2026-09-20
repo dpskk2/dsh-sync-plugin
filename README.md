@@ -42,7 +42,7 @@ gh auth login
 gh auth status
 ```
 
-登录时选择 GitHub.com 和 HTTPS。已有同名 `dsh-sync` 仓库时，**先确认它是你准备用于同步的私有仓库**。
+登录时选择"GitHub.com"和"HTTPS"。已有同名`dsh-sync`仓库时，**先确认它是你准备用于同步的私有仓库**。
 
 ### 3. 点一次「⟳ 同步」
 
@@ -54,7 +54,7 @@ gh auth status
 
 ## 接入第二台电脑
 
-1. 在第二台电脑安装 DSH、Git、`gh` 和本插件，重启 DSH。
+1. 在第二台电脑安装[DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)、[GitHub CLI](https://cli.github.com/) 和本插件，重启 DSH。
 2. 用**同一个 GitHub 账号**执行 `gh auth login`。如果第一台使用默认的 `dsh-sync` 仓库，点同步即可尝试复用它；自定义仓库则填写与第一台相同的 `remote`。
 3. 点「⟳ 同步」，检查设置页的仓库地址与结果。同步成功后，重新启动 DSH，让取回的设置和会话索引加载完整。
 4. 在第二台配置 API 密钥，并按需安装插件和项目依赖。工作区位置不合适时，使用同步结果中的「换位置」。
