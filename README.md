@@ -54,7 +54,12 @@ git config --global http.proxy http://127.0.0.1:*
 ```bash
 git config --global https.proxy http://127.0.0.1:*
 ```
-
+```bash
+set HTTPS_PROXY=http://127.0.0.1:7890
+```
+```bash
+set HTTP_PROXY=http://127.0.0.1:7890
+```
 
 ### 3. 点一次「⟳ 同步」
 
@@ -84,7 +89,8 @@ git config --global https.proxy http://127.0.0.1:*
 ```sh
 # 升级后重启 DSH
 dsh plugin --profile web update dsh-sync-plugin
-
+```
+```sh
 # 卸载插件
 dsh plugin --profile web remove dsh-sync-plugin
 ```
