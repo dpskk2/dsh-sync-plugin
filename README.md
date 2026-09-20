@@ -44,15 +44,15 @@ gh auth status
 
 登录时选择 "GitHub.com" 和 "HTTPS"。已有同名`dsh-sync`仓库时，**先确认它是你准备用于同步的私有仓库**。
 
-### 2.1 根据网络情况可能需要配置代理（****替换成你的代理端口）
+### 2.1 根据网络情况可能需要配置代理（*替换成你的代理端口）
 
 如
 
 ```bash
-git config --global http.proxy http://127.0.0.1:****
+git config --global http.proxy http://127.0.0.1:*
 ```
 ```bash
-git config --global https.proxy http://127.0.0.1:****
+git config --global https.proxy http://127.0.0.1:*
 ```
 
 
