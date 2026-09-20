@@ -23,7 +23,7 @@
 
 ## 开始使用
 
-需要能正常运行的 **DSH Web**、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
+需要能正常运行的 [DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
 
 ### 1. 安装插件
 
