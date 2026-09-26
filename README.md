@@ -1,110 +1,106 @@
-# —持续开发持续修bug中！有问题直接开issues鞭打我！—
+<div align="center">
 
-# DSH Sync · 换台电脑，接着做
+# DSH Sync
 
-**把 DeepSeek Harness 的会话、附件、设置和工作区文件，同步到你的另一台电脑。**
+### 换台电脑，接着做。
 
-数据通过你自己的 GitHub 仓库传输。推荐使用私有仓库；默认手动同步，也可开启自动同步。
+**会话、附件、设置、项目文件，一起带到下一台电脑。**
+为个人多机使用而做的 DeepSeek Harness 同步插件，数据放在你自己的 GitHub 私有仓库。
 
-[![npm version](https://img.shields.io/npm/v/dsh-sync-plugin)](https://www.npmjs.com/package/dsh-sync-plugin)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/dpskk2/dsh-sync-plugin/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/dsh-sync-plugin?color=2563eb)](https://www.npmjs.com/package/dsh-sync-plugin)
+[![DSH Web](https://img.shields.io/badge/DSH_Web-%E2%89%A50.1.5--rc.3-0f766e)](#兼容性)
+[![MIT](https://img.shields.io/badge/license-MIT-slateblue)](LICENSE)
 
-[开始使用（主数据首次上云）](#开始使用（主数据首次上云）) · [接入第二台电脑](#接入第二台电脑) · [常见问题](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题) · [English](https://github.com/dpskk2/dsh-sync-plugin/blob/main/README.en.md)
+[开始使用](#开始使用) · [接入第二台电脑](#接入第二台电脑) · [使用指南](docs/getting-started.md) · [English](README.en.md)
 
-![同步流程示意：电脑 A 的会话、设置和文件，通过自己的私有 GitHub 仓库传到电脑 B；手动或定时同步，非实时协作](https://raw.githubusercontent.com/dpskk2/dsh-sync-plugin/main/docs/assets/sync-flow.svg)
+</div>
 
-## 什么时候用得上
+![DSH Sync 多机同步流程示意，非界面截图](docs/assets/sync-flow.svg)
 
-- **台式机切到笔记本**：出门前同步，另一台电脑取回会话和工作区文件，继续处理同一个项目。
-- **重装或换电脑**：从自己的仓库取回已同步的数据，再配置这台机器的 API 密钥与依赖。
-- **少做重复配置**：模型设置、字号、插件清单随数据同步；插件依赖仍需在新机器安装。
+## 不止把聊天记录搬过去
 
-这是面向个人多机使用的同步插件。两台电脑交替使用时，建议**开始前同步一次，结束后再同步一次**。它不是实时协同编辑，也不是独立的灾难备份。
+台式机上讨论到一半的方案、会话里的附件、正在修改的项目文件——换到笔记本，也能继续处理同一份工作。
 
-## 开始使用（主数据首次上云）
+| 你想继续的事 | DSH Sync 帮你带过去什么 |
+| --- | --- |
+| 接着聊 | 会话记录、附件，以及会话与工作区的对应关系 |
+| 接着做 | 工作区里的实际文件；可在新电脑上「换位置」 |
+| 少配一遍 | 模型与界面设置、插件清单；API 密钥和依赖在各机配置 |
+| 自己掌握数据 | 通过自己的 GitHub 私有仓库传输；上传前核实私有状态 |
+| 少做日常操作 | 手动同步或自动同步；设置页切换模式，保存即生效 |
 
-需要能正常运行的 [DSH Web](https://www.deepseek.com/harness/)、[Git](https://git-scm.com/downloads)，以及可访问 GitHub 的网络。推荐安装 [GitHub CLI](https://cli.github.com/)（`gh`），用于登录和自动建仓。完整环境说明见[安装指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)。
+支持的会话与配置会自动合并；普通文件冲突有明确的本机优先与备份策略，详见[合并边界](docs/sync-content.md#合并与恢复边界)。适合个人多台电脑交替使用，不是多人实时协作工具。
 
-### 1. 安装插件
+## 开始使用
+
+准备好 **DSH Web、Git 和 [GitHub CLI](https://cli.github.com/)**，在运行 DSH 的同一台电脑、同一系统用户下执行：
 
 ```sh
 dsh plugin --profile web add dsh-sync-plugin
-```
-
-重启 DSH。侧栏左下角会出现 **「⟳ 同步」**，设置里会出现 **「同步」** 页面。
-
-### 2. 登录 GitHub
-
-在运行 DSH 的同一台电脑、同一系统用户下执行：
-
-```sh
 gh auth login
 gh auth status
 ```
 
-登录时选择 "GitHub.com" 和 "HTTPS"。已有同名`dsh-sync`仓库时，**先确认它是你准备用于同步的私有仓库**。
+登录选择 **GitHub.com → HTTPS**，然后重启 DSH。
 
-### 2.1 根据网络情况可能需要配置代理（*替换成你的代理端口）
+**点侧栏左下角「⟳ 同步」即可开始。** 未配置仓库时，插件会尝试创建或复用账号下的私有 `dsh-sync` 仓库，并保存地址。
 
-如
+打开 **设置 → 同步**，确认仓库地址正确、同步完成、工作区没有失败。显示「本地快照」只代表本机保存成功，还没有传到云端。
 
-```bash
-git config --global http.proxy http://127.0.0.1:*
-```
-```bash
-git config --global https.proxy http://127.0.0.1:*
-```
-```bash
-set HTTPS_PROXY=http://127.0.0.1:*
-```
-```bash
-set HTTP_PROXY=http://127.0.0.1:*
-```
-
-### 3. 点一次「⟳ 同步」
-
-没有配置仓库地址时，插件会尝试通过 `gh` 创建或复用账号下的 `dsh-sync` 仓库，并保存配置。新建仓库使用私有可见性。
-
-打开 **设置 → 同步**，确认显示了仓库地址、同步完成，且没有工作区失败信息。只有“本地快照”说明尚未上传到另一台电脑可访问的仓库。
-
-> 默认也会上传工作区文件。如果只想同步会话与设置，在首次同步前关闭设置页的「同步工作区文件」。不使用 `gh`、已有仓库或需要 SSH？见[手动连接仓库](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#手动连接仓库)。
+> 默认包含工作区文件。只想同步会话与设置？首次同步前关闭「同步工作区文件」。已有仓库、使用 SSH 或网络需要代理，请看[安装与排障指南](docs/getting-started.md)。
 
 ## 接入第二台电脑
 
-1. 在第二台电脑安装 [DSH Web](https://www.deepseek.com/harness/)、 [Git](https://git-scm.com/downloads)、 [GitHub CLI](https://cli.github.com/)  和本插件，重启 DSH。
-2. 用**同一个 GitHub 账号**执行 `gh auth login`。如果第一台使用默认的 `dsh-sync` 仓库，点同步即可尝试复用它；自定义仓库则填写与第一台相同的 `remote`。
-3. 点「⟳ 同步」，检查设置页的仓库地址与结果。同步成功后，重新启动 DSH，让取回的设置和会话索引加载完整。
-4. 在第二台配置 API 密钥，并按需安装插件和项目依赖。工作区位置不合适时，使用同步结果中的「换位置」。
+1. 安装 DSH Web、Git、GitHub CLI 和本插件，重启 DSH。
+2. 执行 `gh auth login` 登录同一 GitHub 账号。默认仓库可自动复用；自定义仓库需填写相同的 `remote` 和 `branch`。
+3. 点「⟳ 同步」，确认成功后重启 DSH，让取回的会话索引与设置完整加载。
+4. 配置这台机器的 API 密钥、安装插件和项目依赖。项目路径不同，可在同步结果中使用「换位置」。
 
-**验证接通**：在 A 创建一条测试会话 → A 同步 → B 同步 → 在 B 找到这条会话。再从 B 新建一条会话同步回 A，验证双向传输。
+**试一下：** A 新建测试会话 → A 同步 → B 同步 → B 找到会话；再从 B 新建会话同步回 A，完成双向验证。
 
-> 专用凭据文件 `.credentials.yaml` 排除同步，但聊天、附件或项目文件里的密钥仍可能上传。首次同步前请查看[同步范围、排除方法与合并边界](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/sync-content.md)。
+## 日常只需记住两件事
 
-## 日常使用
+**开始前同步，结束后同步。** 两台电脑交替工作，先把上一台的更改推上去，再从下一台取回来。
 
-- **手动同步**：侧栏「⟳ 同步」或设置页 → 同步「立即同步」。
-- **自动同步**：设置 → 同步 → 同步偏好，保存为自动模式后重启 DSH。默认约每 5 分钟同步，并响应会话活动。
-- **遇到问题**：先看设置页的同步详情，再查[排障指南](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md#常见问题)。
+**想省去手动操作，就打开自动模式。** 设置 → 同步 → 同步偏好，选择自动并保存，无需重启。默认每 5 分钟同步，也会响应会话活动。切回手动会停止后续自动调度，正在进行的同步仍会完成。
+
+## 同步什么，留下什么
+
+| 同步 | 留在本机 / 需要另行处理 |
+| --- | --- |
+| 会话、附件、工作区登记 | 专用凭据文件 `.credentials.yaml` |
+| 工作区文件（可关闭） | `node_modules` 等依赖与缓存 |
+| 模型、界面设置与插件清单 | API 密钥配置、插件和项目依赖安装 |
+| 用户提供的托管补丁 | 本机工作区路径覆盖 |
+
+排除凭据文件不等于扫描所有秘密：会话、附件或 `.env` 内的密钥仍可能上传。首次使用请检查[同步范围与排除规则](docs/sync-content.md)。同步会传播删除与错误修改，重要资料仍需独立备份。
+
+## 兼容性
+
+| 项目 | 要求或验证范围 |
+| --- | --- |
+| 宿主 | DSH **Web profile**，包声明 `engines.dsh >=0.1.5-rc.3` |
+| Node.js | 声明 ≥20；推荐 **24**，压缩会话合并需要 Zstandard 支持 |
+| 传输 | Git + 已登录的 GitHub CLI + 可访问 GitHub 的网络 |
+| 自动化验证 | 本地 Git 多副本恢复、故障重试、私有仓库校验替身、设置交互与调度切换 |
+| 实机范围 | 不将本地仿真等同于真实 GitHub 双机验收；详见[验证记录](docs/release-0.12.5-validation.md) |
+
+市场的最低宿主声明用于安装前判断，不代表全部更高版本和操作系统组合都已实测。
+
+## 遇到问题？先看这里
+
+| 现象 | 先做这一步 |
+| --- | --- |
+| 没有同步按钮 | 确认装在 `web` profile，重启 DSH 并刷新页面 |
+| 只有本地快照 | 执行 `gh auth status`，检查设置页仓库地址与错误 |
+| 第二台没有会话 | 先同步 A 再同步 B，核对仓库 / 分支，然后重启 B |
+| 工作区同步失败 | 查看具体工作区错误，修复网络或路径后重试 |
+
+[完整排障](docs/getting-started.md#常见问题) · [配置参考](docs/configuration.md) · [更新记录](CHANGELOG.md) · [开发与验证](CONTRIBUTING.md)
 
 ```sh
-# 升级插件
+# 升级后重启 DSH
 dsh plugin --profile web update dsh-sync-plugin
 ```
-```sh
-# 卸载插件
-dsh plugin --profile web remove dsh-sync-plugin
-```
 
-卸载插件不会自动删除已有的本地数据或 GitHub 同步仓库。
-
-## 继续了解
-
-- [安装、换机与排障](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/getting-started.md)
-- [配置参考](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/configuration.md)
-- [同步内容与合并边界](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/sync-content.md)
-- [补丁管理](https://github.com/dpskk2/dsh-sync-plugin/blob/main/docs/configuration.md#补丁管理)
-- [开发与验证](https://github.com/dpskk2/dsh-sync-plugin/blob/main/CONTRIBUTING.md)
-- [更新记录](https://github.com/dpskk2/dsh-sync-plugin/blob/main/CHANGELOG.md)
-- [报告问题 / 提出建议](https://github.com/dpskk2/dsh-sync-plugin/issues)
-
-如果它帮你省去了换机搬运数据的麻烦，欢迎 Star 或分享你的使用场景。反馈安装卡在哪一步，同样很有帮助。
+如果它帮你省去了换机搬运的麻烦，欢迎给项目一个 **Star**。遇到卡点，请[提交 Issue](https://github.com/dpskk2/dsh-sync-plugin/issues)，附上宿主版本、操作步骤和脱敏错误，帮助下一位用户少走一步弯路。

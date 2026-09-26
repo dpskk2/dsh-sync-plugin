@@ -1,12 +1,34 @@
-# DSH Sync · Pick up on another computer
+<div align="center">
 
-Sync DeepSeek Harness sessions, attachments, settings and workspace files through your own Git repository. Use a private GitHub repository for personal data.
+# DSH Sync
 
-[中文](README.md) · [npm](https://www.npmjs.com/package/dsh-sync-plugin) · [Report an issue](https://github.com/dpskk2/dsh-sync-plugin/issues)
+### Another computer. The same work.
+
+**Bring your conversations, attachments, settings and project files along.**
+Personal multi-computer sync for DeepSeek Harness, through your own private GitHub repository.
+
+[![npm](https://img.shields.io/npm/v/dsh-sync-plugin?color=2563eb)](https://www.npmjs.com/package/dsh-sync-plugin)
+[![MIT](https://img.shields.io/badge/license-MIT-slateblue)](LICENSE)
+
+[Quick start](#quick-start) · [Connect another computer](#connect-another-computer) · [中文](README.md) · [Issues](https://github.com/dpskk2/dsh-sync-plugin/issues)
+
+</div>
+
+## Keep the conversation. Bring the project.
+
+Move from your desktop to your laptop with the context and files you need to continue.
+
+| What you want | What comes with you |
+| --- | --- |
+| Continue the conversation | Sessions, attachments and workspace associations |
+| Continue the project | Actual workspace files, with a local relocation option |
+| Repeat less setup | Model / interface settings and plugin manifests; configure credentials and install dependencies per computer |
+| Control where data goes | Your GitHub repository, with private visibility checked before upload |
+| Spend less time syncing | Manual or automatic sync; switching modes in Settings takes effect immediately |
 
 ## Quick start
 
-You need a working DSH Web installation, Git, access to GitHub, and preferably [GitHub CLI](https://cli.github.com/). The package declares Node.js ≥ 20; Node.js 24 is recommended for compressed session handling. A complete cross-platform compatibility matrix is not yet available.
+You need a working DSH Web installation, Git, access to GitHub, and [GitHub CLI](https://cli.github.com/). The package declares Node.js ≥ 20; Node.js 24 is recommended for compressed session handling. A complete cross-platform compatibility matrix is not yet available.
 
 ```sh
 dsh plugin --profile web add dsh-sync-plugin
@@ -14,7 +36,7 @@ gh auth login
 gh auth status
 ```
 
-Choose GitHub.com and HTTPS during login. Restart DSH, then click **⟳ 同步** (Sync) in the sidebar. With no remote configured, the plugin tries to create or reuse `dsh-sync` under the logged-in account. Newly created repositories are private; check the visibility and purpose of any existing repository before syncing.
+Choose GitHub.com and HTTPS during login. Restart DSH, then click **⟳ 同步** (Sync) in the sidebar. With no remote configured, the plugin tries to create or reuse `dsh-sync` under the logged-in account. It verifies that an existing repository is private and refuses to upload if visibility cannot be confirmed.
 
 In **设置 → 同步** (Settings → Sync), verify the repository URL and a successful result, including workspace results. A local snapshot alone does **not** mean data was uploaded. Workspace file syncing is on by default; turn off **同步工作区文件** before the first sync if you only want sessions and settings.
 
@@ -39,7 +61,15 @@ Create or edit `dsh-sync.json` inside the DSH data directory: `~/.dsh` by defaul
 }
 ```
 
-Configure Git authentication separately; do not put access tokens in the URL. SSH is supported with an already configured key and host trust. Restart DSH after changing the sync mode. Automatic mode defaults to a 300-second interval and also responds to session activity.
+Configure Git authentication separately; do not put access tokens in the URL. GitHub CLI must be installed and authenticated to verify repository visibility, including for manually configured remotes. SSH is supported with an already configured key and host trust. Other Git hosts are not supported for cloud uploads. Switching modes in Settings takes effect immediately. Restart DSH after editing scheduling options directly in the file. Automatic mode defaults to a 300-second interval and also responds to session activity.
+
+## Daily use
+
+Sync before starting and after finishing on each computer. To automate it, select automatic mode in Settings → Sync and save. Switching back to manual cancels future scheduled runs; a sync already in progress finishes normally.
+
+## Compatibility
+
+The package declares DSH Web ≥ `0.1.5-rc.3` via `engines.dsh`. This minimum is not a claim that every newer host version has been tested. Local Git replica tests and UI / scheduler tests are reproducible with `npm test`; authenticated GitHub two-device validation is separate. See the [validation record](docs/release-0.12.5-validation.md).
 
 ## Scope and limits
 
@@ -57,7 +87,7 @@ Configure Git authentication separately; do not put access tokens in the URL. SS
 | Local snapshot only | Check `gh auth status`; retry after about 60 seconds, or set `remote` manually |
 | Authentication error | Run `gh auth login` again under the same system user; Git runs non-interactively |
 | Session missing on B | Sync A first, then B; check remote / branch and errors, then restart B |
-| Auto mode does not start | Restart DSH after saving the mode; ensure `enabled` is not `false` |
+| Auto mode does not start | Allow up to the configured interval (300 seconds by default); ensure `enabled` is not `false` and host overrides do not force manual mode |
 
 More detailed documentation is currently in Chinese: [setup](docs/getting-started.md), [configuration](docs/configuration.md), [sync scope](docs/sync-content.md).
 
