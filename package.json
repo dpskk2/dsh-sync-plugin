@@ -1,6 +1,6 @@
 {
   "name": "dsh-sync-plugin",
-  "version": "0.12.4",
+  "version": "0.12.5",
   "description": "DeepSeek Harness 多电脑同步：通过自己的 GitHub 仓库同步会话、附件、设置和工作区文件。Sync DSH sessions, settings and workspace files across computers.",
   "keywords": [
     "dsh",
@@ -15,7 +15,7 @@
   ],
   "type": "module",
   "scripts": {
-    "test": "node --test tests/preferences.test.mjs && node patch-version-agnostic-test.mjs"
+    "test": "node --test tests/*.test.mjs && node patch-version-agnostic-test.mjs"
   },
   "main": "lib/index.js",
   "files": [
@@ -27,7 +27,10 @@
     "docs/configuration.md",
     "docs/sync-content.md",
     "docs/assets",
-    "LICENSE"
+    "LICENSE",
+    "docs/release-0.12.5-validation.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
   ],
   "dsh": {
     "bundle": {
@@ -50,7 +53,8 @@
   },
   "homepage": "https://github.com/dpskk2/dsh-sync-plugin#readme",
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "dsh": ">=0.1.5-rc.3"
   },
   "exports": {
     ".": "./lib/index.js",
