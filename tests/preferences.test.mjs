@@ -52,7 +52,7 @@ function harness(fetchImpl) {
 const response = (data) => Promise.resolve({ json: async () => data });
 const initial = { mode: 'manual', workspaceSync: true, enabled: true };
 
-test('load preferences, save the selected mode and scope, and explain restart', async () => {
+test('load preferences, save the selected mode and scope, and explain immediate activation', async () => {
   const requests = [];
   let refreshed = false;
   const h = harness((url, options) => {
@@ -72,7 +72,7 @@ test('load preferences, save the selected mode and scope, and explain restart', 
   await tree.props.onSubmit({ preventDefault() {} });
   assert.deepEqual(requests, [{ mode: 'auto', workspaceSync: false }]);
   assert.equal(refreshed, true);
-  assert.match(text(h.render()), /已保存.*重启 DSH/);
+  assert.match(text(h.render()), /已保存.*立即生效/);
 });
 
 test('failed config loading offers a working retry', async () => {
